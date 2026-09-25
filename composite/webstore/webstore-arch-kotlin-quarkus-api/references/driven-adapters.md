@@ -72,7 +72,7 @@ class ProductPersistenceAdapterImpl(
 - Use `PanacheRepositoryBase<E, ID>` (Repository pattern) — not Active Record (`PanacheEntity`), to keep the domain model clean.
 - JPA entities (`*JpaEntity`) are internal to the persistence package — never leak them to the application or domain.
 - Map via `ProductPersistenceMapper` (MapStruct); never pass JPA entities to the service layer.
-- Use optimistic locking (`@Version`) on `OrderJpaEntity` and `ProductJpaEntity` (stock field) to prevent lost-update races.
+- Use optimistic locking (`@Version` mapped to the `product.version` column) on `ProductJpaEntity` to prevent lost updates on stock. Orders have no version column: status changes are serialised by the state machine inside one transaction.
 
 ---
 

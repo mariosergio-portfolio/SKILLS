@@ -1,16 +1,13 @@
 ---
 name: tech-stack-react
-description: Use when the user invokes /tech-stack-react or asks about building a React front-end — TypeScript, Vite, React Router, Zustand, TanStack Query, React Hook Form, Zod, Axios, Recharts/Chart.js, Vitest, React Testing Library, Playwright, Tailwind CSS, and project structure conventions.
+description: React 19 + TypeScript + Vite front-end stack: React Router, Zustand, TanStack Query, React Hook Form + Zod, Axios, Tailwind, Vitest, React Testing Library and Playwright, with project-structure conventions. Use when creating or structuring a React application.
 ---
 
 # React Front-End Stack
 
-## When to use this skill
-Activate when the user types `/tech-stack-react` or asks about the React technology stack — tooling, project structure, conventions, and testing strategy.
-
----
-
 ## Technology Stack
+
+> **Version pins — last verified: (not recorded; write the YYYY-MM here when you check them).** This table is the only place these versions are pinned; composites refer to it. Before starting a new project, check the official release notes and update this table (and its date) rather than copying newer versions into other skills.
 
 | Layer | Technology | Version | Notes |
 |-------|------------|---------|-------|
@@ -341,9 +338,3 @@ With Tailwind v4 the configuration lives in CSS, not in a JS file:
 - **Component tests (React Testing Library)**: render components with mocked queries/stores; assert on visible output.
 - **E2E tests (Playwright)**: cover critical user flows end to end.
 
----
-
-## How to use this skill
-1. Apply these conventions to all React front-end implementation work.
-2. Respond and assist in English unless the user requests another language.
-3. Await further instructions from the user and execute them accordingly.

@@ -1,12 +1,11 @@
 ---
 name: webstore-catalog
-description: Use when the user invokes /webstore-catalog or asks about the web store catalog module — product listing, search, filtering, product detail, categories, and backoffice product management.
+description: Web store catalog module rules: product listing and full-text search, filters, sorting, pagination limits, product detail, the category tree, and visibility of ACTIVE/DRAFT/ARCHIVED products. Use when building or reviewing product or category features in the web store.
 ---
 
 # Web Store — Catalog Module
 
-## When to use this skill
-Activate when the user types `/webstore-catalog` or asks about product listing, search, filtering, product detail pages (PDP), category management, or admin product CRUD.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -45,28 +44,16 @@ Activate when the user types `/webstore-catalog` or asks about product listing, 
 
 ---
 
-## REST Endpoints
+## API
 
-| Method | Path | Visibility | Description |
-|---|---|---|---|
-| `GET` | `/api/products` | Public | List / search products (`?q=`, `?categoryId=`, `?minPrice=`, `?maxPrice=`, `?page=`, `?size=`, `?sort=`) |
-| `GET` | `/api/products/{id}` | Public | Product detail |
-| `POST` | `/api/products` | Admin | Create product |
-| `PUT` | `/api/products/{id}` | Admin | Full update |
-| `PATCH` | `/api/products/{id}` | Admin | Partial update |
-| `DELETE` | `/api/products/{id}` | Admin | Archive (soft-delete) |
-| `GET` | `/api/categories` | Public | List categories |
-| `GET` | `/api/categories/{id}` | Public | Category detail with products |
-| `POST` | `/api/categories` | Admin | Create category |
-| `PUT` | `/api/categories/{id}` | Admin | Update category |
-| `DELETE` | `/api/categories/{id}` | Admin | Delete category |
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the Catalog section (public reads) and Admin — catalog section (writes under `/api/admin/products` and `/api/admin/categories`).
 
 ---
 
 ## Filtering & Pagination
 - Default page size: 20; max: 100.
 - Sort fields: `name`, `price`, `createdAt`.
-- Filters applied server-side via OData-style query params.
+- Filters are plain query parameters, applied server-side.
 - Full-text search (`?q=`) matches name and description (case-insensitive).
 - Only `ACTIVE` products are returned to public endpoints; admin endpoints see all statuses.
 
@@ -83,7 +70,5 @@ Activate when the user types `/webstore-catalog` or asks about product listing, 
 ## How to use this skill
 1. Load `webstore-domain` for entity and rule definitions.
 2. Use the use cases list to name application services and input ports.
-3. Follow the REST endpoints table when implementing or reviewing controllers.
+3. Take endpoint paths, access and DTOs from `webstore-api-contract` (public reads under `/api`, admin writes under `/api/admin`).
 4. Apply filtering, pagination, and visibility rules to every query.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the catalog module context.

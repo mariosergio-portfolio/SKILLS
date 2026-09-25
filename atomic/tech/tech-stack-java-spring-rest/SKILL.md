@@ -1,16 +1,13 @@
 ---
 name: tech-stack-java-spring-rest
-description: Use when the user invokes /tech-stack-java-spring-rest or asks about building a Java 25 Spring Boot REST API — technology stack, Maven dependencies, configuration, OpenAPI/Swagger, H2 dev setup, MapStruct, JPA conventions, and Spring patterns.
+description: Java 25 + Spring Boot 4.1 REST API stack: pinned versions, Maven dependencies, JPA and MapStruct conventions, OpenAPI/Swagger, H2 console for dev, profile-based configuration, and security baseline. Use when creating or configuring a Spring Boot REST service.
 ---
 
 # Java 25 + Spring Boot REST API
 
-## When to use this skill
-Activate when the user types `/tech-stack-java-spring-rest` or needs general guidance for a Java 25 Spring Boot REST API — stack versions, Maven setup, configuration, OpenAPI, H2 dev profile, MapStruct, JPA, and Spring conventions.
-
----
-
 ## Technology Stack
+
+> **Version pins — last verified: (not recorded; write the YYYY-MM here when you check them).** This table is the only place these versions are pinned; composites refer to it. Before starting a new project, check the official release notes and update this table (and its date) rather than copying newer versions into other skills.
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
@@ -162,7 +159,6 @@ public class OrderController { ... }
 
 ---
 
-
 ### H2 In-Memory Database (dev profile)
 
 Spring Boot 4.x no longer auto-registers the H2 console servlet. It must be registered manually. Follow all four steps below.
@@ -180,11 +176,6 @@ H2 must **not** use `<scope>runtime</scope>` — it needs to be available at com
 
 ---
 
-
 ## Configuration File Format
 
 Details: [references/configuration.md](references/configuration.md). Read it when writing application.yml / profile configuration.
-
-## How to use this skill
-1. Apply these stack versions, Maven setup, and Spring conventions for any Java 25 REST API project.
-2. Respond and assist in English unless the user requests another language.

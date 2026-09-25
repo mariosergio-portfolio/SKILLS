@@ -1,12 +1,11 @@
 ---
 name: infra-terraform
-description: Use when the user invokes /infra-terraform or asks about implementing the infra-iac-specification using Terraform — three-layer module structure, variable conventions, state management, provider configuration, workspace strategy, and how each infra-iac-specification component maps to Terraform modules.
+description: Terraform implementation of infra-iac-specification: three-layer modules (abstract interface, provider implementation, root), remote state and locking, workspaces, variable conventions, secrets handling, naming, and deploy scripts. Use when writing or reviewing Terraform for this architecture on any cloud.
 ---
 
 # Terraform IaC Implementation — infra-iac-specification
 
-## When to use this skill
-Activate when the user types `/infra-terraform` or asks about implementing the cloud infrastructure specification with Terraform.
+## Scope
 
 **This skill is a tool-layer implementation of `infra-iac-specification`** — it defines how every contract in that specification is realised using Terraform, regardless of the target cloud provider.
 
@@ -398,5 +397,3 @@ The `modules/` contracts, `envs/*.tfvars` variable files, and `scripts/` deploy 
 2. Load a cloud-provider skill (e.g. `infra-terraform-aws` — not yet included in this library) for the concrete `resource` blocks inside `providers/<cloud>/`.
 3. Apply the three-layer structure, variable conventions, state strategy, and module interfaces defined here to all Terraform IaC work.
 4. Always run `terraform fmt`, `terraform validate`, and `tflint` before committing or opening a pull request.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly.

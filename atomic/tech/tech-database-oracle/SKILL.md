@@ -1,14 +1,9 @@
 ---
 name: tech-database-oracle
-description: Use when the user invokes /tech-database-oracle or asks about Oracle Database DDL design — good practices, naming conventions, data types, constraints, indexes, partitioning, sequences, triggers, and Oracle-specific features for schema definition.
+description: Oracle Database schema design reference: naming conventions, data types, named constraints, indexes, partitioning, sequences and identity columns, triggers, audit columns, optimistic locking with SQL%ROWCOUNT, and Oracle-specific pitfalls. Use when writing or reviewing Oracle DDL or migrations.
 ---
 
 # Oracle Database — DDL Good Practices & Design Reference
-
-## When to use this skill
-Activate when the user types `/tech-database-oracle` or asks about designing or reviewing an Oracle database schema, writing DDL scripts, choosing the right data types, defining constraints, or leveraging Oracle-specific features.
-
----
 
 ## General DDL Principles
 
@@ -452,5 +447,3 @@ END;
 2. When writing DDL, always include explicit constraint names, choose the correct data type from the reference above, and add the canonical audit columns (`CREATED_AT`, `UPDATED_AT`).
 3. When reviewing DDL, check against the anti-patterns table and the constraint naming rules.
 4. Remember Oracle-specific rules: DDL is auto-committed, FKs are never auto-indexed, `DATE` includes time, and `BOOLEAN` is not available in SQL DDL.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly.

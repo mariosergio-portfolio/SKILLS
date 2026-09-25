@@ -1,12 +1,11 @@
 ---
 name: webstore-payments
-description: Use when the user invokes /webstore-payments or asks about the web store payments module — initiating payments, handling gateway webhooks, idempotency, refunds, and Stripe/PayPal/Mercado Pago integration.
+description: Web store payments module rules: starting payments with Stripe, PayPal or Mercado Pago, signature-verified idempotent webhooks, payment status flow, refunds, and card-data security. Use when integrating a payment gateway or handling payment callbacks in the web store.
 ---
 
 # Web Store — Payments Module
 
-## When to use this skill
-Activate when the user types `/webstore-payments` or asks about payment initiation, gateway webhooks, idempotency keys, refunds, or integrating Stripe, PayPal, or Mercado Pago.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -34,18 +33,12 @@ Activate when the user types `/webstore-payments` or asks about payment initiati
 
 ---
 
-## REST Endpoints
+## API
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/payments` | Initiate payment (`orderId` in body) |
-| `GET` | `/api/payments/{orderId}` | Get payment status for an order |
-| `POST` | `/api/payments/webhook/stripe` | Stripe webhook receiver |
-| `POST` | `/api/payments/webhook/paypal` | PayPal webhook receiver |
-| `POST` | `/api/payments/webhook/mercadopago` | Mercado Pago IPN receiver |
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the Payments section.
 
-- Webhook endpoints must be **public** (no auth) but **signature-verified**.
-- All webhook handlers must be **idempotent** — processing the same event twice must produce the same result.
+- Webhook endpoints are **public** (no auth) but **signature-verified**.
+- All webhook handlers must be **idempotent**: processing the same event twice produces the same result.
 
 ---
 
@@ -108,5 +101,3 @@ PENDING ──► SUCCEEDED ──► REFUNDED
 2. Always implement webhook handlers as idempotent operations.
 3. Use the gateway-specific integration notes for the correct API calls and webhook event names.
 4. Enforce all security rules — never store sensitive card data.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the payments module context.

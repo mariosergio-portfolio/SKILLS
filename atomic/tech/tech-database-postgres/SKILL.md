@@ -1,14 +1,9 @@
 ---
 name: tech-database-postgres
-description: Use when the user invokes /tech-database-postgres or asks about PostgreSQL relational database DDL design — good practices, naming conventions, data types, constraints, indexes, partitioning, sequences, ENUM types, triggers, and PostgreSQL-specific features for schema definition.
+description: PostgreSQL schema design reference: naming conventions, data types, named constraints, indexes, partitioning, identity/sequences, ENUM types, triggers, audit columns, optimistic locking, and DDL anti-patterns. Use when writing or reviewing PostgreSQL DDL or migrations.
 ---
 
 # PostgreSQL — DDL Good Practices & Design Reference
-
-## When to use this skill
-Activate when the user types `/tech-database-postgres` or asks about designing or reviewing a PostgreSQL database schema, writing DDL scripts, choosing the right data types, defining constraints, or leveraging PostgreSQL-specific features.
-
----
 
 ## General DDL Principles
 
@@ -476,5 +471,3 @@ CREATE TRIGGER trg_<table>_set_updated_at
 1. Apply these PostgreSQL DDL conventions and good practices to any schema design, migration script, or schema review task.
 2. When writing DDL, always include explicit constraint names, choose the correct data type from the reference above, and add the canonical audit columns (`created_at`, `updated_at`).
 3. When reviewing DDL, check against the anti-patterns table and the constraint naming rules.
-4. Respond and assist in English unless the user requests another language.
-5. Await further instructions from the user and execute them accordingly.

@@ -1,16 +1,13 @@
 ---
 name: tech-stack-kotlin-quarkus-rest
-description: Use when the user invokes /tech-stack-kotlin-quarkus-rest or asks about building a Kotlin 2.4 + Quarkus 3.38 REST API — technology stack, Gradle dependencies, configuration, OpenAPI/Swagger, H2 dev setup, MapStruct, Panache/JPA conventions, and Quarkus patterns.
+description: Kotlin 2.4 + Quarkus 3.38 REST API stack: pinned versions, Gradle Kotlin DSL build, Panache/JPA, MapStruct, OpenAPI, SmallRye JWT, and %dev/%test/%prod configuration with H2 and PostgreSQL. Use when creating or configuring a Quarkus service in Kotlin.
 ---
 
 # Kotlin + Quarkus REST API
 
-## When to use this skill
-Activate when the user types `/tech-stack-kotlin-quarkus-rest` or needs general guidance for a Kotlin 2.4 + Quarkus 3.38 REST API — stack versions, Gradle setup, configuration, OpenAPI, H2 dev profile, MapStruct, Panache/JPA, and Quarkus conventions.
-
----
-
 ## Technology Stack
+
+> **Version pins — last verified: (not recorded; write the YYYY-MM here when you check them).** This table is the only place these versions are pinned; composites refer to it. Before starting a new project, check the official release notes and update this table (and its date) rather than copying newer versions into other skills.
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
@@ -340,4 +337,3 @@ mp.jwt.verify.issuer=https://my-issuer.example.com
 ## How to use this skill
 1. Apply these stack versions, Gradle setup, and Quarkus/Kotlin conventions for any Quarkus REST API project.
 2. Use Quarkus **3.38.0** for the latest features or **3.33.3** (LTS) for production stability — both pin Kotlin **2.4.0** via the BOM.
-3. Respond and assist in English unless the user requests another language.

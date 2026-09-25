@@ -1,6 +1,6 @@
-# infra-aws-fargate — Operations commands
+# infra-aws-ecs — Operations commands
 
-Reference file for the `infra-aws-fargate` skill. Read it when operating, debugging, or scaling a running environment.
+Reference file for the `infra-aws-ecs` skill. EC2 host scaling is in [launch-type-ec2.md](launch-type-ec2.md). Read it when operating, debugging, or scaling a running environment.
 
 ## Useful Operations Commands
 

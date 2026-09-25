@@ -1,29 +1,23 @@
 ---
 name: webstore-arch-java-api
-description: Use when the user invokes /webstore-arch-java-api or asks about implementing the web store in Java — project structure, domain entities, port/adapter naming, REST endpoints, and configuration for the e-commerce REST API.
+description: Blueprint for building the web store back end in Java 25 + Spring Boot with hexagonal architecture: package layout, naming, ports and adapters per module, controller split, configuration, and a step-by-step workflow with done criteria. Use when implementing or extending the web store API in Java/Spring.
 ---
 
 # Web Store — Java API Implementation
 
-## When to use this skill
-Activate when the user types `/webstore-arch-java-api` or asks about implementing the web store back-end in Java.
+## Loading strategy
 
-> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
+> Skills named below are sibling skills in this library. Load them with the Skill tool (or `/<skill-name>`) when the table says so; never guess their content.
 
-**Always load these foundation skills first:**
-- `tech-arch-hexagonal` — hexagonal architecture, three rings, ports, adapters, dependency rules, folder layout
-- `tech-good-practices` — SOLID principles, clean code, API design, testing strategy
-- `tech-stack-java-spring-rest` — Java 25 + Spring Boot 4.1.x stack, Maven, OpenAPI, H2, MapStruct
+Load **only what the current task touches**. Loading every module skill up front floods the context and buries the rules that matter.
 
-**Load these web store domain skills for the module being implemented:**
-- `webstore-domain` — all entities, business rules, and module responsibilities
-- `webstore-catalog` — Module: products and categories
-- `webstore-cart` — Module: cart lifecycle and coupon logic
-- `webstore-checkout` — Module: order placement and price freeze
-- `webstore-orders` — Module: order lifecycle and status transitions
-- `webstore-payments` — Module: gateway integration and webhooks
-- `webstore-inventory` — Module: stock management and audit log
-- `webstore-backoffice` — Module: admin product/order/inventory/customer/coupon management and reports
+| Task | Load in addition to this skill |
+|---|---|
+| Any task that touches an endpoint | `webstore-api-contract` (read only the sections for the module) |
+| Scaffolding the project or changing build/config | `tech-stack-java-spring-rest`, `tech-arch-hexagonal` |
+| Implementing or changing a module | `webstore-domain` + that module's skill (e.g. `webstore-cart`). Checkout also needs `webstore-cart` and `webstore-inventory`. Back-office work needs the module it administers. |
+| Persistence, entities, migrations | `webstore-data-structure`, plus `tech-database-postgres` on PostgreSQL |
+| Code review or refactoring | `tech-good-practices`, `tech-arch-hexagonal` |
 
 ---
 
@@ -87,7 +81,7 @@ webstore/
 │   │   ├── checkout/                 ← CheckoutController + DTOs
 │   │   ├── orders/                   ← OrderController, AdminOrderController + DTOs
 │   │   ├── payments/                 ← PaymentController, WebhookController + DTOs
-│   │   ├── inventory/                ← InventoryController + DTOs
+│   │   ├── inventory/                ← AdminInventoryController + DTOs
 │   │   └── customers/                ← CustomerController, AuthController + DTOs
 │   ├── persistence/                  ← SHARED driven adapters
 │   │   ├── entity/                   ← {Entity}JpaEntity classes
@@ -125,33 +119,23 @@ webstore/
 
 ---
 
-## REST Endpoint Summary
+## REST Endpoints
 
-| Method | Path | Module | Description |
-|---|---|---|---|
-| `GET` / `POST` | `/api/products` | Catalog | List/search / create product |
-| `GET` / `PUT` / `PATCH` / `DELETE` | `/api/products/{id}` | Catalog | Detail / update / archive |
-| `GET` / `POST` | `/api/categories` | Catalog | List / create category |
-| `GET` / `PUT` / `DELETE` | `/api/categories/{id}` | Catalog | Detail / update / delete |
-| `GET` | `/api/cart` | Cart | Get current cart |
-| `POST` | `/api/cart/items` | Cart | Add item |
-| `PATCH` / `DELETE` | `/api/cart/items/{itemId}` | Cart | Update qty / remove item |
-| `POST` / `DELETE` | `/api/cart/coupon` | Cart | Apply / remove coupon |
-| `POST` | `/api/cart/refresh` | Cart | Refresh prices |
-| `POST` | `/api/orders` | Checkout | Place order |
-| `GET` | `/api/orders` | Orders | Customer order list |
-| `GET` / `DELETE` | `/api/orders/{id}` | Orders | Detail / cancel |
-| `GET` | `/api/admin/orders` | Orders | Admin order list |
-| `PATCH` | `/api/admin/orders/{id}/status` | Orders | Advance status |
-| `POST` | `/api/payments` | Payments | Initiate payment |
-| `GET` | `/api/payments/{orderId}` | Payments | Payment status |
-| `POST` | `/api/payments/webhook/stripe` | Payments | Stripe webhook |
-| `POST` | `/api/payments/webhook/paypal` | Payments | PayPal webhook |
-| `POST` | `/api/payments/webhook/mercadopago` | Payments | Mercado Pago IPN |
-| `GET` / `PATCH` | `/api/inventory/{productId}` | Inventory | Stock level / adjust |
-| `GET` | `/api/inventory` | Inventory | All stock levels |
+Implement exactly the endpoints, access rules, DTOs, pagination shape and RFC 9457 error format in the `webstore-api-contract` skill. Do not keep a copy of the endpoint table here; load the contract section for the module you are working on.
 
-Use `?page=0&size=20&sort=name,asc` for pagination. Errors: RFC 9457 Problem Details.
+Controller split (one package per module under `infrastructure/rest/`):
+
+| Package | Controllers | Contract section |
+|---|---|---|
+| `catalog` | `ProductController`, `CategoryController`, `ShippingMethodController`, `AdminProductController`, `AdminCategoryController` | Catalog, Admin — catalog |
+| `cart` | `CartController` | Cart |
+| `checkout` | `CheckoutController` | Checkout and orders (`POST /api/orders`) |
+| `orders` | `OrderController`, `AdminOrderController` | Checkout and orders, Admin — orders |
+| `payments` | `PaymentController`, `WebhookController` | Payments |
+| `inventory` | `AdminInventoryController` | Admin — inventory |
+| `customers` | `AuthController`, `CustomerController`, `AdminCustomerController`, `AdminCouponController`, `AdminReportController` | Auth and account, Admin — customers, coupons, reports |
+
+Cart endpoints must accept anonymous requests identified by the `sessionId` cookie; configure Spring Security so `/api/cart/**` is `permitAll()` and the cart service resolves the caller from JWT or cookie.
 
 ---
 
@@ -248,13 +232,31 @@ spring:
 
 ---
 
-## How to use this skill
-1. Load `tech-arch-hexagonal`, `tech-good-practices`, and `tech-stack-java-spring-rest` for the full technical foundation.
-2. Load the relevant web store domain skills for the module being implemented.
-3. Apply the project structure and naming conventions defined here to all web store Java implementation work.
-4. Use `PaymentGatewayPort` to keep gateway-specific code isolated in `infrastructure/gateway/`.
-5. Refer to `webstore-data-structure` for the relational schema, DDL, and migration reference.
-6. Refer to `webstore-inventory` for optimistic locking patterns on stock deduction.
-6. Use `webstore-checkout` for the `PlaceOrder` transaction boundaries.
-7. Respond and assist in English unless the user requests another language.
-8. Await further instructions from the user and execute them accordingly.
+## Workflow — implementing or changing a module
+
+1. **Scope.** Identify the module and its use cases from the module skill. If the request is ambiguous (which use cases? admin side too?), ask before coding.
+2. **Domain.** Add or adjust entities and value objects in `domain/model/`, expressing invariants as methods. Write plain unit tests for every business rule in the module skill, with no Spring context.
+3. **Ports.** Update the input port in `application/port/in/` and the output ports in `application/port/out/`.
+4. **Service.** Implement `<Module>PortImpl` with the transaction boundary at the use-case level. Unit-test it against in-memory fakes of the output ports.
+5. **Persistence adapter.** Add the JPA entity, repository, mapper and `<Entity>PersistenceAdapterImpl`. For any schema change, add a new Flyway migration; never edit an applied one.
+6. **REST adapter.** Add the controller and DTOs exactly as in the `webstore-api-contract` section: same path, method, access rule, status codes and RFC 9457 errors. Add nothing the contract doesn't list.
+7. **Tests.** Write API tests (`@SpringBootTest` + `MockMvc`/`RestTestClient`) for each endpoint: the happy path plus every error status the contract documents for it. Use Testcontainers PostgreSQL for persistence tests.
+8. **Verify.** Run `./mvnw verify`, then open `/v3/api-docs` and compare the module's paths with the contract.
+
+## Done criteria
+
+A module is done only when all of these hold:
+
+- [ ] `domain/` has no Spring, JPA or HTTP imports (`grep -rE "org\.springframework|jakarta\.persistence" <domain dir>` returns nothing).
+- [ ] Every endpoint in the module's contract section exists with the documented path, method, access rule and status codes, and there are no extra endpoints.
+- [ ] Every business rule in the module skill has at least one unit test that fails when the rule is broken.
+- [ ] Errors are RFC 9457 Problem Details with the contract's status codes. No stack traces or entity internals leak.
+- [ ] Module-specific checks pass:
+  - **checkout:** order creation and stock deduction share one transaction, the optimistic-lock conflict retries once then returns `409`, and order-line prices are frozen.
+  - **cart:** every endpoint works without a JWT via the `sessionId` cookie, and `POST /api/cart/merge` sums quantities capped at stock.
+  - **orders:** every status change goes through the state machine, and cancellation restores stock.
+  - **payments:** webhooks verify the signature before parsing and are idempotent on `gatewayReference`. No card data is stored or logged.
+  - **inventory:** every stock change writes an audit-log row.
+- [ ] `./mvnw verify` is green with no new warnings, and there are no TODOs left in the changed code.
+
+Architecture reminders: keep gateway-specific code behind `PaymentGatewayPort` in `infrastructure/gateway/`, and follow `webstore-checkout` for the `PlaceOrder` transaction boundary.

@@ -1,14 +1,9 @@
 ---
 name: infra-iac-specification
-description: Use when the user invokes /infra-iac-specification or asks about the cloud-agnostic infrastructure specification for deploying a full-stack multi-microservice application — architecture model, component responsibilities, deployment tiers, networking, compute, database, CI/CD, secrets, and naming conventions, independent of any cloud provider or IaC tool.
+description: Infrastructure contract for a multi-microservice full-stack app that fits any cloud and any IaC tool: architecture model, networking, container compute, image registry, CI/CD pipeline, relational database, IAM, secrets, observability, naming, deployment tiers and order. Use when designing cloud infrastructure, or before using infra-terraform or infra-aws-ecs.
 ---
 
 # Cloud Infrastructure Specification — Full-Stack Multi-Microservice
-
-## When to use this skill
-Activate when the user types `/infra-iac-specification` or asks about the provider-agnostic infrastructure design for deploying a full-stack multi-microservice application. This skill defines the **what** and **why** — the architecture contracts. For the **how** (provider-specific IaC), load the appropriate provider skill on top of this one.
-
----
 
 ## Purpose
 
@@ -388,5 +383,3 @@ Any skill that implements this specification **must**:
 1. Load this skill to understand the cloud-agnostic architecture contracts before implementing or reviewing any cloud deployment.
 2. Load the appropriate provider or IaC tool skill on top of this spec for the concrete implementation.
 3. When creating a new provider skill, use the Provider Skill Contract section as the compliance checklist.
-4. Respond and assist in English unless the user requests another language.
-5. Await further instructions from the user and execute them accordingly.

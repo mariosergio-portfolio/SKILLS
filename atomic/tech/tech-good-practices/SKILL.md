@@ -1,14 +1,9 @@
 ---
 name: tech-good-practices
-description: Use when the user invokes /tech-good-practices or asks about software engineering good practices — SOLID principles, API design guidelines, testing strategy, and clean coding rules. Language-agnostic and domain-agnostic.
+description: The house engineering standards: SOLID, REST API design (resource naming, status codes, error format, pagination), testing pyramid and strategy, and clean-code rules. Use when writing or reviewing application code or API designs in projects that follow these house standards.
 ---
 
 # Architecture Good Practices
-
-## When to use this skill
-Activate when the user types `/tech-good-practices` or asks about SOLID principles, clean code rules, API design, or testing strategy — regardless of programming language or application domain.
-
----
 
 ## SOLID Principles
 
@@ -137,9 +132,3 @@ Structure every test in three clearly separated sections:
 2. Write the minimal implementation to make it pass.
 3. Refactor — keep tests green.
 
----
-
-## How to use this skill
-1. Apply these principles and guidelines to any application regardless of programming language or domain.
-2. Respond and assist in English unless the user requests another language.
-3. Await further instructions from the user and execute them accordingly.

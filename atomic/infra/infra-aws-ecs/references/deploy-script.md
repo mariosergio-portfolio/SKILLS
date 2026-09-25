@@ -1,6 +1,6 @@
-# infra-aws-fargate — Deploy script structure
+# infra-aws-ecs — Deploy script structure
 
-Reference file for the `infra-aws-fargate` skill. Read it when writing the deploy script.
+Reference file for the `infra-aws-ecs` skill. For EC2, add the capacity parameters shown in [launch-type-ec2.md](launch-type-ec2.md) to step [2]. Read it when writing the deploy script.
 
 ## Deploy Script Structure
 

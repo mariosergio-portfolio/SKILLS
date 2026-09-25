@@ -1,12 +1,11 @@
 ---
 name: webstore-orders
-description: Use when the user invokes /webstore-orders or asks about the web store orders module — order lifecycle, status transitions, order history, cancellation, and admin order management.
+description: Web store orders module rules: the order status machine (PENDING, PAID, PROCESSING, SHIPPED, DELIVERED, CANCELLED), allowed transitions, customer vs admin cancellation, stock restoration, immutability after placement, and order history. Use when working on order lifecycle or fulfilment in the web store.
 ---
 
 # Web Store — Orders Module
 
-## When to use this skill
-Activate when the user types `/webstore-orders` or asks about order lifecycle, status transitions, customer order history, order cancellation, or admin order management.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -60,26 +59,9 @@ PENDING ──► PAID ──► PROCESSING ──► SHIPPED ──► DELIVERE
 
 ---
 
-## REST Endpoints
+## API
 
-| Method | Path | Visibility | Description |
-|---|---|---|---|
-| `GET` | `/api/orders` | Customer | Customer's own order list (`?page=`, `?size=`, `?sort=`) |
-| `GET` | `/api/orders/{id}` | Customer | Order detail |
-| `DELETE` | `/api/orders/{id}` | Customer | Cancel own order (only `PENDING`) |
-| `GET` | `/api/admin/orders` | Admin | All orders (`?status=`, `?customerId=`, `?from=`, `?to=`) |
-| `GET` | `/api/admin/orders/{id}` | Admin | Full admin order detail |
-| `PATCH` | `/api/admin/orders/{id}/status` | Admin | Advance status |
-| `DELETE` | `/api/admin/orders/{id}` | Admin | Admin cancel (any cancellable status) |
-
-**PATCH status request body:**
-```json
-{
-  "status": "SHIPPED",
-  "trackingCarrier": "FedEx",
-  "trackingNumber": "123456789"
-}
-```
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the Checkout and orders section (customer) and Admin — orders section.
 
 ---
 
@@ -106,5 +88,3 @@ PENDING ──► PAID ──► PROCESSING ──► SHIPPED ──► DELIVERE
 2. Always validate status transitions against the state machine — never allow direct field assignment.
 3. Enforce immutability: only status and tracking fields change after placement.
 4. Apply cancellation rules strictly — stock restoration must accompany every cancellation.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the orders module context.

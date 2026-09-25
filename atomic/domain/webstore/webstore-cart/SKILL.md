@@ -1,12 +1,11 @@
 ---
 name: webstore-cart
-description: Use when the user invokes /webstore-cart or asks about the web store cart module — adding/removing items, quantity updates, coupon application, price refresh, anonymous vs authenticated carts, and cart merging on login.
+description: Web store cart module rules: add/update/remove items, stock checks, coupon validation, price refresh, anonymous (session cookie) vs customer carts, and merging carts on login. Use when building or reviewing cart behaviour in the web store.
 ---
 
 # Web Store — Cart Module
 
-## When to use this skill
-Activate when the user types `/webstore-cart` or asks about cart operations: adding items, updating quantities, removing items, applying coupons, refreshing prices, or merging anonymous carts on login.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -39,17 +38,9 @@ Activate when the user types `/webstore-cart` or asks about cart operations: add
 
 ---
 
-## REST Endpoints
+## API
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/cart` | Get current cart (session or customer) |
-| `POST` | `/api/cart/items` | Add item (`productId`, `quantity`) |
-| `PATCH` | `/api/cart/items/{itemId}` | Update quantity |
-| `DELETE` | `/api/cart/items/{itemId}` | Remove item |
-| `POST` | `/api/cart/coupon` | Apply coupon code |
-| `DELETE` | `/api/cart/coupon` | Remove coupon |
-| `POST` | `/api/cart/refresh` | Refresh prices and stock status |
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the Cart section of the contract. All cart endpoints work for anonymous sessions and for logged-in customers; `POST /api/cart/merge` runs `MergeAnonymousCart`.
 
 ---
 
@@ -88,7 +79,5 @@ Activate when the user types `/webstore-cart` or asks about cart operations: add
 ## How to use this skill
 1. Load `webstore-domain` for full entity and coupon rule definitions.
 2. Use the use cases list to name application services and input ports.
-3. Follow REST endpoints when implementing or reviewing cart controllers.
+3. Take endpoint paths, access and DTOs from `webstore-api-contract`; cart endpoints must work for anonymous sessions.
 4. Enforce price refresh and coupon validation rules at every checkout entry point.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the cart module context.

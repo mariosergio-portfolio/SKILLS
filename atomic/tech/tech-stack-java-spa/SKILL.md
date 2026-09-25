@@ -1,16 +1,13 @@
 ---
 name: tech-stack-java-spa
-description: Use when the user invokes /tech-stack-java-spa or asks about building a server-side Java SPA with Vaadin — technology stack, Maven dependencies, configuration, security setup, and Karibu-Testing conventions.
+description: Server-side Java single-page app stack: Java 25, Spring Boot and Vaadin 25 Flow, with Maven dependencies, Spring Security integration for views, and Karibu-Testing for UI tests. Use when building a Vaadin web UI.
 ---
 
 # Java 25 + Spring Boot + Vaadin SPA
 
-## When to use this skill
-Activate when the user types `/tech-stack-java-spa` or needs guidance on the Vaadin server-side SPA stack built on top of Spring Boot.
-
----
-
 ## Technology Stack
+
+> **Version pins — last verified: (not recorded; write the YYYY-MM here when you check them).** This table is the only place these versions are pinned; composites refer to it. Before starting a new project, check the official release notes and update this table (and its date) rather than copying newer versions into other skills.
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
@@ -160,9 +157,3 @@ vaadin:
 - **Integration tests**: `@SpringBootTest` + Karibu-Testing with real Spring context and Testcontainers database.
 - **E2E tests**: Playwright or Selenium against a running instance for critical user flows.
 
----
-
-## How to use this skill
-1. Apply these Vaadin stack conventions, Maven additions, and testing patterns to any server-side Java SPA project.
-2. Respond and assist in English unless the user requests another language.
-3. Await further instructions from the user and execute them accordingly.

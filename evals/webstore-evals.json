@@ -1,0 +1,96 @@
+{
+  "description": "Behavioural checks for the web store skills. Run each prompt in a scratch project with the skills installed (and once without, as a baseline); a case passes when every expectation holds for the produced code or answer.",
+  "evals": [
+    {
+      "id": "java-cart-anonymous",
+      "skill": "webstore-arch-java-api",
+      "prompt": "/webstore-arch-java-api implement the cart module (add item, update quantity, remove item) in the existing project.",
+      "expectations": [
+        "Loads webstore-api-contract, webstore-domain and webstore-cart, and does not load every module skill",
+        "Implements POST /api/cart/items, PATCH /api/cart/items/{itemId} and DELETE /api/cart/items/{itemId} exactly as in the contract",
+        "Cart endpoints work without a JWT: the security config permits /api/cart/** and the caller is resolved from the sessionId cookie",
+        "Adding an existing product increments its quantity instead of creating a second line",
+        "Adding more than the available stock returns an RFC 9457 error, not a 500",
+        "The domain package has no org.springframework or jakarta.persistence imports",
+        "Unit tests cover the quantity >= 1 and stock-availability rules"
+      ]
+    },
+    {
+      "id": "java-checkout-atomic",
+      "skill": "webstore-arch-java-api",
+      "prompt": "/webstore-arch-java-api implement PlaceOrder (POST /api/orders).",
+      "expectations": [
+        "Order creation, stock deduction, price freeze and cart clearing happen in one transaction",
+        "Stock deduction uses the product.version optimistic lock, retries once, then returns 409",
+        "OrderItem.unitPrice is copied from the cart at placement and never recalculated",
+        "An empty cart returns 422 and an out-of-stock item returns 409 with item-level errors[]",
+        "The endpoint requires a customer JWT"
+      ]
+    },
+    {
+      "id": "quarkus-admin-products",
+      "skill": "webstore-arch-kotlin-quarkus-api",
+      "prompt": "/webstore-arch-kotlin-quarkus-api add product management for admins.",
+      "expectations": [
+        "Write endpoints are under /api/admin/products, not /api/products",
+        "Writes use @RolesAllowed(\"ADMIN\"), and GET /api/admin/products also allows STAFF and MANAGER",
+        "DELETE archives the product (soft delete) and returns 204",
+        "A duplicate SKU returns 409 as RFC 9457 Problem Details",
+        "Public GET /api/products still returns only ACTIVE products, paginated as PageResponse { items, page, size, totalElements, totalPages }"
+      ]
+    },
+    {
+      "id": "quarkus-webhook-idempotent",
+      "skill": "webstore-arch-kotlin-quarkus-api",
+      "prompt": "/webstore-arch-kotlin-quarkus-api implement the Stripe webhook.",
+      "expectations": [
+        "The signature is verified before the payload is parsed, and an invalid signature returns 400",
+        "A duplicate event (same gatewayReference) returns 200 without reprocessing",
+        "payment_intent.succeeded moves the payment to SUCCEEDED and the order to PAID",
+        "No card data or raw secrets are logged"
+      ]
+    },
+    {
+      "id": "react-checkout",
+      "skill": "webstore-arch-react",
+      "prompt": "/webstore-arch-react build the checkout flow.",
+      "expectations": [
+        "Uses webstore-api-contract, not webstore-arch-java-api, as the API reference",
+        "Calls POST /api/cart/refresh on entering checkout, POST /api/orders, then POST /api/payments",
+        "Shipping methods come from GET /api/shipping-methods",
+        "A 409 sends the user back to the cart with item errors, and a 422 shows field errors in place",
+        "The place-order button is disabled while the mutation is pending, and success invalidates ['cart'] and ['orders']",
+        "No JWT is written to localStorage or sessionStorage"
+      ]
+    },
+    {
+      "id": "react-login-merge",
+      "skill": "webstore-arch-react",
+      "prompt": "/webstore-arch-react implement login so an anonymous shopper keeps their cart.",
+      "expectations": [
+        "After a successful login, the client calls POST /api/cart/merge and then invalidates ['cart']",
+        "The access token is kept in memory, and a 401 triggers a single refresh-and-retry"
+      ]
+    },
+    {
+      "id": "aws-launch-type",
+      "skill": "infra-aws-ecs",
+      "prompt": "/infra-aws-ecs create the CloudFormation stacks for a new 'catalog' service.",
+      "expectations": [
+        "Asks for LAUNCH_TYPE and the other mandatory inputs before generating code",
+        "For Fargate it uses awsvpc and TargetType ip; for EC2 it uses bridge, host port 0 and TargetType instance, never mixing the two",
+        "DesiredCount defaults to 0, and the image tag is resolved from SSM rather than passed as a parameter",
+        "The database password is never a plaintext parameter or environment variable"
+      ]
+    },
+    {
+      "id": "contract-drift-check",
+      "skill": "webstore-api-contract",
+      "prompt": "Our React app calls PATCH /api/inventory/{id} and the backend returns 404. What's wrong?",
+      "expectations": [
+        "Identifies that the contract path is /api/admin/inventory/{productId}",
+        "Says the fix belongs in the client (or explains how to change the contract first if the path should change)"
+      ]
+    }
+  ]
+}

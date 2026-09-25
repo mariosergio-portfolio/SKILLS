@@ -1,12 +1,11 @@
 ---
 name: webstore-checkout
-description: Use when the user invokes /webstore-checkout or asks about the web store checkout flow — order placement, stock deduction, price freezing, cart clearing, and the transition from cart to order.
+description: Web store checkout rules: the step-by-step PlaceOrder flow, a single atomic transaction for stock deduction and order creation, price freeze on order lines, total calculation, cart clearing, and error scenarios (409/422). Use when implementing or reviewing order placement in the web store.
 ---
 
 # Web Store — Checkout Module
 
-## When to use this skill
-Activate when the user types `/webstore-checkout` or asks about the checkout process: placing an order, deducting stock, freezing prices, clearing the cart, or the atomic transaction that creates an order.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -54,23 +53,9 @@ Activate when the user types `/webstore-checkout` or asks about the checkout pro
 
 ---
 
-## REST Endpoints
+## API
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/orders` | Place order from current cart |
-
-**Request body:**
-```json
-{
-  "shippingAddress": { "street": "...", "city": "...", "state": "...", "postalCode": "...", "country": "..." },
-  "billingAddress": { ... },
-  "shippingMethodId": "uuid",
-  "couponCode": "SAVE10"
-}
-```
-
-**Response:** created `Order` with status `PENDING` and `id` for payment initiation.
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the `POST /api/orders` with `PlaceOrderRequest`. It returns the created `Order` with status `PENDING`, and its `id` is used to start payment.
 
 ---
 
@@ -118,5 +103,3 @@ total           = subtotal - discountAmount + shippingCost
 2. Treat `PlaceOrder` as a single atomic use case — never split stock deduction and order creation across separate transactions.
 3. Follow the price freeze rules strictly — `OrderItem.unitPrice` must never be recalculated after placement.
 4. Use the error scenarios table to implement consistent error responses.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the checkout module context.

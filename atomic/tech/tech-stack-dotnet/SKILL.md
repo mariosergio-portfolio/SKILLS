@@ -1,16 +1,13 @@
 ---
 name: tech-stack-dotnet
-description: Use when the user invokes /tech-stack-dotnet or asks about building a .NET REST API with C# 14, ASP.NET Core 10, Entity Framework Core 10, FluentValidation, xUnit v3, and Testcontainers.
+description: .NET 10 REST API stack: C# 14, ASP.NET Core 10 (minimal APIs or controllers), EF Core 10, FluentValidation, xUnit v3 and Testcontainers, with solution layout and conventions. Use when creating or configuring an ASP.NET Core API.
 ---
 
 # .NET 10 + ASP.NET Core + EF Core REST API
 
-## When to use this skill
-Activate when the user types `/tech-stack-dotnet` or needs guidance on the .NET technology stack for a REST API. 
-
----
-
 ## Technology Stack
+
+> **Version pins — last verified: (not recorded; write the YYYY-MM here when you check them).** This table is the only place these versions are pinned; composites refer to it. Before starting a new project, check the official release notes and update this table (and its date) rather than copying newer versions into other skills.
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
@@ -122,9 +119,3 @@ Solution.sln
     └── appsettings.json
 ```
 
----
-
-## How to use this skill
-1. Apply this stack, versions, and conventions to any .NET REST API project.
-2. Respond and assist in English unless the user requests another language.
-3. Await further instructions from the user and execute them accordingly.

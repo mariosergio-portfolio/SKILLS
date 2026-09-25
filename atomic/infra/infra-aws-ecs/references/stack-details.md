@@ -1,6 +1,6 @@
-# infra-aws-fargate — CloudFormation stack details
+# infra-aws-ecs — CloudFormation stack details
 
-Reference file for the `infra-aws-fargate` skill. Read it when writing or reviewing any individual CloudFormation stack template.
+Reference file for the `infra-aws-ecs` skill. Items marked **[launch type]** differ between EC2 and Fargate — take them from [references/launch-type-ec2.md](launch-type-ec2.md) / [references/launch-type-fargate.md](launch-type-fargate.md). Read it when writing or reviewing any individual CloudFormation stack template.
 
 ## Stack Details
 
@@ -10,7 +10,7 @@ Reference file for the `infra-aws-fargate` skill. Read it when writing or review
 **Creates:**
 - VPC (`10.0.0.0/16`), Internet Gateway
 - 2 public subnets (ALB + NAT, across 2 AZs) — `MapPublicIpOnLaunch: true`
-- 2 private subnets (Fargate tasks, across 2 AZs) — `MapPublicIpOnLaunch: false`
+- 2 private subnets (tasks, or EC2 container instances, across 2 AZs) — `MapPublicIpOnLaunch: false`
 - Single NAT Gateway in Public Subnet A (cost-optimised, one AZ)
 - Public route table → IGW; Private route table → NAT Gateway
 - `sg-alb` — inbound TCP :80 from `0.0.0.0/0`
@@ -25,12 +25,13 @@ Reference file for the `infra-aws-fargate` skill. Read it when writing or review
 ---
 
 ### `aws-ecs-infra-stack.yml` (product-level, deploy once)
-**Parameters:** `ProductName`, `Environment`.
+**Parameters:** `ProductName`, `Environment` (+ EC2 capacity parameters **[launch type]**).
 
 **Creates:**
 - ECS Cluster: `${Environment}-${ProductName}-cluster`
 - ALB (internet-facing, HTTP :80): `${Environment}-${ProductName}-alb` — subnets and security group imported from VPC stack
 - ALB Listener (HTTP :80): default action = `fixed-response 404 {"error":"not found"}` — each per-service stack adds its own `ListenerRule`
+- EC2 only: launch template, Auto Scaling group, capacity provider **[launch type]**
 
 **Exports (prefix `${Environment}-${ProductName}`):**
 `-ecs-cluster-name`, `-ecs-cluster-arn`, `-alb-arn`, `-alb-listener-arn`, `-alb-dns`
@@ -59,9 +60,9 @@ Reference file for the `infra-aws-fargate` skill. Read it when writing or review
 - `EcsTaskRole` — inline policies:
   - CloudWatch Logs: `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` scoped to `/ecs/${Environment}-${ProductName}-${AppServiceName}*`
   - Secrets Manager: `secretsmanager:GetSecretValue` scoped to `${Environment}-${ProductName}-${AppServiceName}-db-secret*` (allows the task to read the Aurora password)
-- **No EC2 instance role or instance profile** (Fargate only)
+- EC2 only: `Ec2InstanceRole` + `Ec2InstanceProfile` **[launch type]**
 
-**Role naming:** `${Environment}-${ProductName}-${AppServiceName}-ecs-task-execution-role` / `-ecs-task-role`
+**Role naming:** `${Environment}-${ProductName}-${AppServiceName}-ecs-task-execution-role` / `-ecs-task-role` (EC2 adds `-ec2-instance-role`)
 
 **Exports:** `${Environment}-${ProductName}-${AppServiceName}-ecs-task-execution-role-arn`, `-ecs-task-role-arn`
 
@@ -97,21 +98,21 @@ Reference file for the `infra-aws-fargate` skill. Read it when writing or review
 ---
 
 ### `per-service/aws-ecs-service-stack.yml` (per microservice, deploy once)
-**Parameters:** `ProductName`, `Environment`, `AppServiceName`, `ContainerPort` (default `8080`), `HealthCheckPath` (default `/actuator/health`), `HealthCheckIntervalSeconds` (default `30`), `HealthCheckTimeoutSeconds` (default `5`), `HealthyThresholdCount` (default `2`), `UnhealthyThresholdCount` (default `3`), `ListenerRulePriority`, `TaskCpu` (default `512`, allowed: `256/512/1024/2048/4096`), `TaskMemory` (default `1024`), `DesiredCount` (default `0`), `LogRetentionDays` (default `7`).
+**Parameters:** `ProductName`, `Environment`, `AppServiceName`, `ContainerPort` (default `8080`), `HealthCheckPath` (default `/actuator/health`), `HealthCheckIntervalSeconds` (default `30`), `HealthCheckTimeoutSeconds` (default `5`), `HealthyThresholdCount` (default `2`), `UnhealthyThresholdCount` (default `3`), `ListenerRulePriority`, `TaskCpu` (default `512`, allowed: `256/512/1024/2048/4096`), `TaskMemory` (default `1024` Fargate / `768` EC2), `DesiredCount` (default `0`), `LogRetentionDays` (default `7`).
 
 **Creates:**
 - CloudWatch Log Group: `/ecs/${Environment}-${ProductName}-${AppServiceName}` (tags include `AppServiceName`)
 - Task Definition (`UpdateReplacePolicy: Retain`, `DeletionPolicy: Retain`):
-  - `NetworkMode: awsvpc`, `RequiresCompatibilities: [FARGATE]`
-  - CPU/Memory at task level (Fargate requirement)
+  - `NetworkMode` and `RequiresCompatibilities` **[launch type]**
+  - CPU/Memory at task level
   - Image: `${EcrRepoUri}:{{resolve:ssm:/${Environment}-${ProductName}-${AppServiceName}-imageTag}}` (dynamic SSM resolution)
   - `ExecutionRoleArn` / `TaskRoleArn` imported from IAM stack
   - Container env vars: `SPRING_PROFILES_ACTIVE=${Environment}`, `SERVER_PORT=${ContainerPort}`, `DB_HOST` (from RDS stack export), `DB_PORT` (from RDS stack export), `DB_NAME` (from RDS stack export)
   - `DB_SECRET_ARN` injected as an environment variable; the application reads the secret at startup via the AWS SDK to obtain the username and password — **never inject the password as a plaintext env var**
   - Log driver: `awslogs` → the log group above
-- ALB Target Group: `TargetType: ip` (required for Fargate `awsvpc`), health check configured from parameters
+- ALB Target Group: `TargetType` **[launch type]**, health check configured from parameters
 - ALB Listener Rule: path-pattern `/${AppServiceName}/*` → forwards to the Target Group; `Priority: ${ListenerRulePriority}`
-- ECS Service: `LaunchType: FARGATE`, `AssignPublicIp: DISABLED`, private subnets, `HealthCheckGracePeriodSeconds: 60`, deployment circuit breaker with `Rollback: true`, `MinimumHealthyPercent: 50`, `MaximumPercent: 200`
+- ECS Service: `LaunchType` and network settings **[launch type]**, `HealthCheckGracePeriodSeconds: 60`, deployment circuit breaker with `Rollback: true`, `MinimumHealthyPercent: 50`, `MaximumPercent: 200`
 
 **Exports:** `${Environment}-${ProductName}-${AppServiceName}-ecs-service-name`
 

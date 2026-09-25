@@ -1,14 +1,9 @@
 ---
 name: tech-arch-hexagonal
-description: Use when the user invokes /tech-arch-hexagonal or asks about Hexagonal Architecture (Ports & Adapters) — the three-ring layer model, driving/driven adapters, input/output ports, dependency rules, folder structure, and how to split responsibilities across layers. Language-agnostic and domain-agnostic.
+description: Hexagonal architecture (Ports & Adapters) for any language: the domain, application and adapter rings, input/output ports, driving vs driven adapters, the dependency rule, and the folder layout. Use when structuring a new service or deciding where a piece of code belongs in a hexagonal codebase.
 ---
 
 # Hexagonal Architecture — Layer Model (Ports & Adapters)
-
-## When to use this skill
-Activate when the user types `/tech-arch-hexagonal` or asks about structuring an application using Hexagonal Architecture (Ports & Adapters): rings, ports, adapters, dependency rules, and folder layout. This skill is language-agnostic and domain-agnostic.
-
----
 
 ## Overview
 
@@ -144,9 +139,3 @@ Hexagonal Architecture organises code into three concentric rings. The inner rin
 - Aim for high coverage on the Domain Core and Application service layers — this is where business rules live.
 - Integration and E2E tests cover critical paths only; keep them few and focused.
 
----
-
-## How to use this skill
-1. Apply this layer model and dependency rules to any application regardless of programming language or domain.
-2. Respond and assist in English unless the user requests another language.
-3. Await further instructions from the user and execute them accordingly.

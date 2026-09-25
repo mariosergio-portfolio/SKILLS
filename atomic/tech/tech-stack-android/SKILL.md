@@ -1,16 +1,13 @@
 ---
 name: tech-stack-android
-description: Use when the user invokes /tech-stack-android or asks about building an Android app with Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines, and WorkManager.
+description: Native Android stack: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines/Flow and WorkManager, with Gradle version catalog and SDK targets. Use when building or structuring an Android app.
 ---
 
 # Android Stack — Kotlin + Compose + Clean Architecture + MVVM
 
-## When to use this skill
-Activate when the user types `/tech-stack-android` or needs guidance on the Android technology stack: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt DI, Room, Retrofit, Coroutines/Flow, and WorkManager.
-
----
-
 ## Technology Stack
+
+> **Version pins — last verified: (not recorded; write the YYYY-MM here when you check them).** This table is the only place these versions are pinned; composites refer to it. Before starting a new project, check the official release notes and update this table (and its date) rather than copying newer versions into other skills.
 
 | Concern | Technology | Notes |
 |---------|------------|-------|
@@ -166,9 +163,3 @@ app/
 | Compose UI | Compose UI Test (`createComposeRule`) | Screen rendering and interactions |
 | Remote / Sync | MockWebServer (OkHttp) | Retrofit + Kotlin Serialization integration tests |
 
----
-
-## How to use this skill
-1. Apply this stack, architecture, and conventions to any Kotlin Android project.
-2. Respond and assist in English unless the user requests another language.
-3. Await further instructions from the user and execute them accordingly.

@@ -1,12 +1,11 @@
 ---
 name: webstore-inventory
-description: Use when the user invokes /webstore-inventory or asks about the web store inventory module — stock levels, stock deduction, reservation, restocking, low-stock alerts, and admin inventory adjustments.
+description: Web store inventory module rules: stock levels, deducting stock at checkout with optimistic locking, optional reservations, restocking, low-stock alerts, manual admin adjustments, and the stock audit log. Use when working on stock management in the web store.
 ---
 
 # Web Store — Inventory Module
 
-## When to use this skill
-Activate when the user types `/webstore-inventory` or asks about stock management: checking levels, deducting stock at checkout, reserving stock, restoring stock on cancellation, low-stock alerts, or admin inventory adjustments.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -37,24 +36,12 @@ Activate when the user types `/webstore-inventory` or asks about stock managemen
 
 ---
 
-## REST Endpoints
+## API
 
-| Method | Path | Visibility | Description |
-|---|---|---|---|
-| `GET` | `/api/inventory/{productId}` | Admin | Get stock level for a product |
-| `PATCH` | `/api/inventory/{productId}` | Admin | Manual stock adjustment |
-| `GET` | `/api/inventory` | Admin | List all products with stock (`?lowStock=true` filter) |
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the Admin — inventory section (`/api/admin/inventory/**`).
 
-**PATCH adjustment request body:**
-```json
-{
-  "delta": 50,
-  "reason": "Supplier delivery",
-  "actor": "admin@store.com"
-}
-```
-- Positive `delta`: stock in. Negative `delta`: stock out (manual write-off).
-- `delta` resulting in `stockQuantity < 0` is rejected.
+- A positive `delta` adds stock. A negative `delta` is a manual write-off.
+- A `delta` that would make `stockQuantity < 0` is rejected.
 
 ---
 
@@ -94,5 +81,3 @@ Activate when the user types `/webstore-inventory` or asks about stock managemen
 2. Always use optimistic locking for `DeductStock` — never issue a plain update without version check.
 3. Record every stock change in the audit log.
 4. Use the reservation pattern only when checkout abandonment rate is high enough to justify the complexity.
-5. Respond and assist in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the inventory module context.

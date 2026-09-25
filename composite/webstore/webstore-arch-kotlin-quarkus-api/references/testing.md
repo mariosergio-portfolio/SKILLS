@@ -45,8 +45,8 @@ class ProductPersistenceAdapterImplTest {
 ### API tests — REST resources
 ```kotlin
 @QuarkusTest
-@TestSecurity(user = "admin", roles = ["admin"])
-class ProductResourceTest {
+@TestSecurity(user = "admin", roles = ["ADMIN"])
+class AdminProductResourceTest {
 
     @Test
     fun `should return 201 when product is created`() {
@@ -54,10 +54,10 @@ class ProductResourceTest {
             .contentType(ContentType.JSON)
             .body("""{"sku":"SKU-001","name":"Widget","price":{"amount":9.99,"currency":"USD"}}""")
         .`when`()
-            .post("/api/products")
+            .post("/api/admin/products")
         .then()
             .statusCode(201)
-            .header("Location", containsString("/api/products/"))
+            .header("Location", containsString("/api/admin/products/"))
     }
 }
 ```

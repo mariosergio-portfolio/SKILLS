@@ -1,16 +1,25 @@
 ---
-name: infra-aws-fargate
-description: Use when the user invokes /infra-aws-fargate or asks about deploying a full-stack application (frontend + backend) on AWS using CloudFormation IaC with ECS Fargate launch type — serverless compute, no EC2 instances to manage, cost-effective for test/dev.
+name: infra-aws-ecs
+description: AWS implementation of infra-iac-specification using CloudFormation and ECS (EC2 or Fargate launch type): VPC, shared ALB, per-service ECS services, Aurora PostgreSQL, CodeBuild + ECR CI/CD, SSM-driven image tags, GitHub CodeConnections, deploy scripts and operations. Use when deploying this architecture to AWS or writing its CloudFormation stacks.
 ---
 
-# AWS Full-Stack Deployment — ECS Fargate (CloudFormation IaC)
+# AWS Full-Stack Deployment — ECS on EC2 or Fargate (CloudFormation IaC)
 
-## When to use this skill
-Activate when the user types `/infra-aws-fargate` or asks about deploying a full-stack application on AWS using ECS with the **Fargate launch type** (serverless — no EC2 instances or ASG to manage).
+## Scope
 
-**This skill is a provider implementation of `infra-iac-specification`** — it realises every contract defined in that specification using AWS CloudFormation, ECS Fargate, Aurora PostgreSQL, and CodeBuild.
+**This skill is a provider implementation of `infra-iac-specification`** — it realises every contract defined in that specification using AWS CloudFormation, ECS, Aurora PostgreSQL, and CodeBuild.
 
-> **Why Fargate for test/dev?** No idle EC2 host cost — you pay only for the vCPU/memory reserved by running tasks. A single `0.5 vCPU / 1024 MB` task costs ~$0.016/hour (~$11.50/month). Compare to 1 × `t3.medium` EC2 host ~$30/month regardless of task count.
+## Choose the launch type first
+
+Ask the user which ECS launch type to use when they have not said, then read **only** the matching file. It lists every stack, parameter and command that differs; everything else in this skill applies to both.
+
+| | Fargate (default for dev/test) | EC2 |
+|---|---|---|
+| Pick it when | Variable or low load, no hosts to manage | Steady high load, host-level control, custom AMIs, packing many tasks per host |
+| Cost model | Per task vCPU/memory (≈ $11.50/month for a 0.5 vCPU / 1 GB task) | Per instance, whatever the task count (≈ $30/month for one `t3.medium`) |
+| Networking | `awsvpc`, target type `ip` | `bridge`, dynamic host port, target type `instance` |
+| Extra resources | none | Launch template, Auto Scaling group, capacity provider, EC2 instance role |
+| Details | [references/launch-type-fargate.md](references/launch-type-fargate.md) | [references/launch-type-ec2.md](references/launch-type-ec2.md) |
 
 ---
 
@@ -20,11 +29,11 @@ The real stack layout is **two-tier**:
 
 1. **Product-level infrastructure** (deployed once per product per environment):
    - VPC, subnets, security groups, NAT Gateway → `aws-vpc-stack.yml`
-   - Shared ECS Cluster + ALB (HTTP :80 with default 404 action) → `aws-ecs-infra-stack.yml`
+   - Shared ECS Cluster + ALB (HTTP :80 with default 404 action), plus the EC2 capacity (ASG + capacity provider) when using EC2 → `aws-ecs-infra-stack.yml`
 
 2. **Per-service infrastructure** (deployed once per microservice per environment — all stacks under `per-service/`):
    - CodeBuild project + ECR repository → `aws-codebuild-stack.yml`
-   - IAM roles (task execution + task) → `aws-iam-stack.yml`
+   - IAM roles (task execution + task, plus the EC2 instance role/profile when using EC2) → `aws-iam-stack.yml`
    - **RDS Aurora cluster (PostgreSQL-compatible)** → `aws-rds-aurora-stack.yml`
    - ECS Task Definition + ECS Service + ALB Listener Rule + Target Group → `aws-ecs-service-stack.yml`
 
@@ -35,11 +44,11 @@ Internet
     │
     └──► ALB (internet-facing, HTTP :80)
               │
-              ├── /catalog/*   → ECS Fargate Service (catalog)
-              ├── /orders/*    → ECS Fargate Service (orders)
-              └── /payments/*  → ECS Fargate Service (payments)
+              ├── /catalog/*   → ECS Service (catalog)
+              ├── /orders/*    → ECS Service (orders)
+              └── /payments/*  → ECS Service (payments)
                        │
-              (private subnets, AssignPublicIp: DISABLED, outbound via NAT)
+              (private subnets, outbound via NAT; Fargate tasks or EC2 ASG hosts)
 ```
 
 ---
@@ -120,7 +129,7 @@ aws ssm put-parameter \
 | Resource | CloudFormation Parameter | Test/Dev (default) | Prod (minimum) |
 |---|---|---|---|
 | **Task CPU** | `TaskCpu` | `512` (½ vCPU) | `1024` (1 vCPU) |
-| **Task memory** | `TaskMemory` | `1024 MB` | `2048 MB` |
+| **Task memory** | `TaskMemory` | `1024 MB` Fargate / `768 MB` EC2 | `2048 MB` |
 | **ECS desired count** | `DesiredCount` | `0` ⚠️ default 0 — scaled via `aws ecs update-service` | `1`–`3` |
 | **Log retention** | `LogRetentionDays` | `7` | `30` |
 | **Health check interval** | `HealthCheckIntervalSeconds` | `30` | `30` |
@@ -131,6 +140,8 @@ aws ssm put-parameter \
 | **Aurora engine version** | `AuroraEngineVersion` | `15.4` | `15.4` |
 | **Aurora backup retention** | `BackupRetentionDays` | `7` | `14` |
 | **Aurora deletion protection** | `DeletionProtection` | `false` | `true` |
+
+EC2 hosts add instance type, EBS and ASG size parameters — see [references/launch-type-ec2.md](references/launch-type-ec2.md).
 
 > ⚠️ `DesiredCount` defaults to **0** in `aws-ecs-service-stack.yml`. This is intentional — CloudFormation deploys the infrastructure without starting tasks. Tasks are started (and scaled) separately via `aws ecs update-service --desired-count N --force-new-deployment`.
 
@@ -152,6 +163,7 @@ Before generating any code, **ask the user for the following values**:
 | `GITHUB_BRANCH` | Branch to build | No (default `main`) | `main` |
 | `GITHUB_CONNECTION_ARN` | AWS CodeConnections ARN for GitHub | ⚠️ **Yes (for CodeBuild)** | `arn:aws:codeconnections:...` |
 | `DB_NAME` | Aurora database name | No (default `appdb`) | `catalog` |
+| `LAUNCH_TYPE` | `FARGATE` or `EC2` | ⚠️ **Yes** | `FARGATE` |
 
 > The following values are **shell environment variables** in deploy scripts — never hardcoded:
 > - `ENVIRONMENT` — `dev`, `staging`, or `prod`
@@ -166,10 +178,10 @@ Before generating any code, **ask the user for the following values**:
 cloudFormation/
 ├── generic/
 │   ├── aws-vpc-stack.yml              ← VPC, subnets, IGW, NAT, security groups (once per product)
-│   ├── aws-ecs-infra-stack.yml        ← ECS Cluster + ALB shared infrastructure (once per product)
+│   ├── aws-ecs-infra-stack.yml        ← ECS Cluster + ALB (+ ASG + capacity provider for EC2) (once per product)
 │   └── per-service/
 │       ├── aws-codebuild-stack.yml    ← ECR repo + CodeBuild project (once per microservice)
-│       ├── aws-iam-stack.yml          ← ECS task execution role + task role (once per microservice)
+│       ├── aws-iam-stack.yml          ← task execution role + task role (+ EC2 instance role/profile) (once per microservice)
 │       ├── aws-rds-aurora-stack.yml   ← Aurora PostgreSQL cluster + subnet group + secret (once per microservice)
 │       └── aws-ecs-service-stack.yml  ← Task definition, ECS service, ALB rule, TG (once per microservice)
 ```
@@ -180,7 +192,7 @@ cloudFormation/
 
 ## Stack Details
 
-Details: [references/stack-details.md](references/stack-details.md). Read it when writing or reviewing any individual CloudFormation stack template.
+Details: [references/stack-details.md](references/stack-details.md). Read it when writing or reviewing any individual CloudFormation stack template, together with the launch-type file ([references/launch-type-ec2.md](references/launch-type-ec2.md) / [references/launch-type-fargate.md](references/launch-type-fargate.md)).
 
 ## Deployment Order
 
@@ -234,8 +246,7 @@ Details: [references/operations.md](references/operations.md). Read it when oper
 ---
 
 ## How to use this skill
-
-1. **Ask for mandatory inputs** (`PRODUCT_NAME`, `APP_SERVICE_NAME`, `LISTENER_RULE_PRIORITY`, `GITHUB_*`) before generating any code.
+1. **Ask for mandatory inputs** (`LAUNCH_TYPE`, `PRODUCT_NAME`, `APP_SERVICE_NAME`, `LISTENER_RULE_PRIORITY`, `GITHUB_*`) before generating any code, then read the matching launch-type file.
 2. Substitute every `<PRODUCT_NAME>`, `<APP_SERVICE_NAME>`, `<CONTAINER_PORT>`, `<HEALTH_CHECK_PATH>`, `<LISTENER_RULE_PRIORITY>`, `<GITHUB_*>` placeholder in all generated stacks and scripts.
 3. `ENVIRONMENT`, `AWS_REGION`, `AWS_ACCOUNT_ID` are **shell variables** — keep them as `${VARIABLE_NAME}` in all scripts.
 4. When generating multiple microservices, each gets its own `per-service/` stack trio with a **unique `ListenerRulePriority`**.
@@ -247,5 +258,4 @@ Details: [references/operations.md](references/operations.md). Read it when oper
 10. Inject `DB_HOST`, `DB_PORT`, `DB_NAME`, and `DB_SECRET_ARN` into the ECS task as environment variables; the application reads the secret at startup via the AWS SDK.
 11. Add `sg-rds` to `aws-vpc-stack.yml` — only inbound TCP :5432 from `sg-ecs`.
 12. Include a Secrets Manager `GetSecretValue` policy on the DB secret ARN in `EcsTaskRole` inside `aws-iam-stack.yml`.
-13. Respond and assist in English unless the user requests another language.
-14. Await further instructions and execute them accordingly.
+13. Apply every launch-type-specific rule from the launch-type file (network mode, target type, host port, extra EC2 resources) — never mix the two.

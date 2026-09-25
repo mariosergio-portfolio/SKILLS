@@ -1,29 +1,23 @@
 ---
 name: webstore-arch-kotlin-quarkus-api
-description: Use when the user invokes /webstore-arch-kotlin-quarkus-api or asks about implementing the web store back-end in Kotlin + Quarkus — project structure, domain entities, port/adapter naming, REST endpoints, and configuration for the e-commerce REST API using Hexagonal Architecture.
+description: Blueprint for building the web store back end in Kotlin + Quarkus with hexagonal architecture: package layout, data classes, ports, services, REST resources, Panache adapters, mappers, configuration, tests, and a step-by-step workflow with done criteria. Use when implementing or extending the web store API in Kotlin/Quarkus.
 ---
 
 # Web Store — Kotlin + Quarkus API Implementation
 
-## When to use this skill
-Activate when the user types `/webstore-arch-kotlin-quarkus-api` or asks about implementing the web store back-end in Kotlin + Quarkus.
+## Loading strategy
 
-> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
+> Skills named below are sibling skills in this library. Load them with the Skill tool (or `/<skill-name>`) when the table says so; never guess their content.
 
-**Always load these foundation skills first:**
-- `tech-arch-hexagonal` — hexagonal architecture, three rings, ports, adapters, dependency rules, folder layout
-- `tech-good-practices` — SOLID principles, clean code, API design, testing strategy
-- `tech-stack-kotlin-quarkus-rest` — Kotlin 2.4 + Quarkus 3.38 stack, Gradle, OpenAPI, H2, MapStruct
+Load **only what the current task touches**. Loading every module skill up front floods the context and buries the rules that matter.
 
-**Load these web store domain skills for the module being implemented:**
-- `webstore-domain` — all entities, business rules, and module responsibilities
-- `webstore-catalog` — Module: products and categories
-- `webstore-cart` — Module: cart lifecycle and coupon logic
-- `webstore-checkout` — Module: order placement and price freeze
-- `webstore-orders` — Module: order lifecycle and status transitions
-- `webstore-payments` — Module: gateway integration and webhooks
-- `webstore-inventory` — Module: stock management and audit log
-- `webstore-backoffice` — Module: admin product/order/inventory/customer/coupon management and reports
+| Task | Load in addition to this skill |
+|---|---|
+| Any task that touches an endpoint | `webstore-api-contract` (read only the sections for the module) |
+| Scaffolding the project or changing build/config | `tech-stack-kotlin-quarkus-rest`, `tech-arch-hexagonal` |
+| Implementing or changing a module | `webstore-domain` + that module's skill (e.g. `webstore-cart`). Checkout also needs `webstore-cart` and `webstore-inventory`. Back-office work needs the module it administers. |
+| Persistence, entities, migrations | `webstore-data-structure`, plus `tech-database-postgres` on PostgreSQL |
+| Code review or refactoring | `tech-good-practices`, `tech-arch-hexagonal` |
 
 ---
 
@@ -31,8 +25,7 @@ Activate when the user types `/webstore-arch-kotlin-quarkus-api` or asks about i
 
 - **Artifact name:** `webstore-kotlin-api`
 - **Package prefix:** `com.mycompany.webstore`
-- **Language:** Kotlin 2.4.0 (JVM 21)
-- **Framework:** Quarkus 3.38.0 (LTS: 3.33.3)
+- **Language / framework versions:** as pinned in `tech-stack-kotlin-quarkus-rest` (Technology Stack table)
 - **Build:** Gradle (Kotlin DSL — `build.gradle.kts`)
 
 ---
@@ -91,7 +84,7 @@ webstore/
 │   │   ├── checkout/                 ← CheckoutResource + DTOs + mappers
 │   │   ├── orders/                   ← OrderResource, AdminOrderResource + DTOs + mappers
 │   │   ├── payments/                 ← PaymentResource, WebhookResource + DTOs + mappers
-│   │   ├── inventory/                ← InventoryResource + DTOs + mappers
+│   │   ├── inventory/                ← AdminInventoryResource + DTOs + mappers
 │   │   └── customers/                ← CustomerResource, AuthResource + DTOs + mappers
 │   ├── persistence/                  ← SHARED driven adapters
 │   │   ├── entity/                   ← {Entity}JpaEntity classes
@@ -263,12 +256,11 @@ class ProductPortImpl(
 ## REST Resources — Driving Adapters
 
 ```kotlin
-// infrastructure/rest/catalog/ProductResource.kt
+// infrastructure/rest/catalog/ProductResource.kt — public read side
 @Tag(name = "Catalog")
 @Path("/api/products")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 class ProductResource(
     private val productPort: ProductPort,
     private val productMapper: ProductRestMapper,
@@ -278,32 +270,45 @@ class ProductResource(
     fun list(
         @QueryParam("page") @DefaultValue("0") page: Int,
         @QueryParam("size") @DefaultValue("20") size: Int,
-    ): List<ProductResponse> =
-        productPort.findAll(page, size).map(productMapper::toResponse)
+        @QueryParam("q") q: String?,
+    ): PageResponse<ProductResponse> =
+        productPort.searchActive(q, page, size.coerceAtMost(100)).map(productMapper::toResponse)
 
     @GET
     @Path("/{id}")
     fun getById(@PathParam("id") id: UUID): ProductResponse =
-        productMapper.toResponse(productPort.findById(id))
+        productMapper.toResponse(productPort.findActiveById(id))
+}
+
+// infrastructure/rest/catalog/AdminProductResource.kt — admin write side
+@Tag(name = "Admin — Catalog")
+@Path("/api/admin/products")
+@ApplicationScoped
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+class AdminProductResource(
+    private val productPort: ProductPort,
+    private val productMapper: ProductRestMapper,
+) {
 
     @POST
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     fun create(@Valid request: ProductRequest): Response {
         val created = productPort.create(productMapper.toDomain(request))
-        return Response.created(URI("/api/products/${created.id}"))
+        return Response.created(URI("/api/admin/products/${created.id}"))
             .entity(productMapper.toResponse(created))
             .build()
     }
 
     @PUT
     @Path("/{id}")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     fun update(@PathParam("id") id: UUID, @Valid request: ProductRequest): ProductResponse =
         productMapper.toResponse(productPort.update(id, productMapper.toDomain(request)))
 
     @DELETE
     @Path("/{id}")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     fun archive(@PathParam("id") id: UUID): Response {
         productPort.archive(id)
         return Response.noContent().build()
@@ -315,7 +320,8 @@ class ProductResource(
 - Inject `ProductPort` interface — never `ProductPortImpl`.
 - Resources are pure translators: receive HTTP → call port → map response. Zero business logic.
 - Use `@Valid` on request bodies; validation failures are caught by the global exception mapper.
-- `@RolesAllowed` on write endpoints; public `GET` endpoints require no annotation.
+- Public reads and admin writes live in separate resources; paths, roles and the `PageResponse` shape come from `webstore-api-contract`.
+- Role names match the JWT `role` claim exactly: `CUSTOMER`, `STAFF`, `MANAGER`, `ADMIN`.
 
 ---
 
@@ -323,33 +329,13 @@ class ProductResource(
 
 Details: [references/driven-adapters.md](references/driven-adapters.md). Read it when implementing persistence, MapStruct mappers, error handling, or OpenAPI config.
 
-## REST Endpoint Summary
+## REST Endpoints
 
-| Method | Path | Module | Auth |
-|---|---|---|---|
-| `GET` / `POST` | `/api/products` | Catalog | public / admin |
-| `GET` / `PUT` / `DELETE` | `/api/products/{id}` | Catalog | public / admin |
-| `GET` / `POST` | `/api/categories` | Catalog | public / admin |
-| `GET` / `PUT` / `DELETE` | `/api/categories/{id}` | Catalog | public / admin |
-| `GET` | `/api/cart` | Cart | user |
-| `POST` | `/api/cart/items` | Cart | user |
-| `PATCH` / `DELETE` | `/api/cart/items/{itemId}` | Cart | user |
-| `POST` / `DELETE` | `/api/cart/coupon` | Cart | user |
-| `POST` | `/api/cart/refresh` | Cart | user |
-| `POST` | `/api/orders` | Checkout | user |
-| `GET` | `/api/orders` | Orders | user |
-| `GET` / `DELETE` | `/api/orders/{id}` | Orders | user |
-| `GET` | `/api/admin/orders` | Orders | admin |
-| `PATCH` | `/api/admin/orders/{id}/status` | Orders | admin |
-| `POST` | `/api/payments` | Payments | user |
-| `GET` | `/api/payments/{orderId}` | Payments | user |
-| `POST` | `/api/payments/webhook/stripe` | Payments | public |
-| `POST` | `/api/payments/webhook/paypal` | Payments | public |
-| `POST` | `/api/payments/webhook/mercadopago` | Payments | public |
-| `GET` / `PATCH` | `/api/inventory/{productId}` | Inventory | admin |
-| `GET` | `/api/inventory` | Inventory | admin |
+Implement exactly the endpoints, access rules, DTOs, pagination shape and RFC 9457 error format in the `webstore-api-contract` skill. Do not keep a copy of the endpoint table here; load the contract section for the module you are working on.
 
-Use `?page=0&size=20&sort=name,asc` for pagination. Errors: RFC 9457 Problem Details via `GlobalExceptionMapper`.
+Resource split (one package per module under `infrastructure/rest/`): `catalog` (`ProductResource`, `CategoryResource`, `ShippingMethodResource`, admin resources), `cart` (`CartResource`), `checkout` (`CheckoutResource`), `orders` (`OrderResource`, `AdminOrderResource`), `payments` (`PaymentResource`, `WebhookResource`), `inventory` (`AdminInventoryResource`), `customers` (`AuthResource`, `CustomerResource`, admin customer/coupon/report resources).
+
+Cart resources must **not** carry `@RolesAllowed`. Annotate them `@PermitAll` and resolve the caller from the JWT when one is present, otherwise from the `sessionId` cookie. Use `@RolesAllowed("CUSTOMER")` for customer endpoints and `@RolesAllowed({"STAFF","MANAGER","ADMIN"})` or `@RolesAllowed("ADMIN")` for admin endpoints, as the contract specifies.
 
 ---
 
@@ -417,23 +403,41 @@ Details: [references/testing.md](references/testing.md). Read it when writing te
 1. **Money**: always use the `Money` value object — never raw `BigDecimal` or `Double` for prices or totals.
 2. **Order immutability**: after `OrderStatus.PENDING`, corrections go through compensating domain events — never mutate order items directly.
 3. **Price freeze at checkout**: `OrderItem.unitPrice` is set from `CartItem.unitPrice` at the moment `CheckoutPort.placeOrder()` is called — it is never recalculated afterwards.
-4. **Stock deduction**: deduct stock atomically inside `CheckoutPortImpl.placeOrder()` using optimistic locking (`@Version` on `ProductJpaEntity.stockQuantity`); retry once on `OptimisticLockException`.
+4. **Stock deduction**: deduct stock atomically inside `CheckoutPortImpl.placeOrder()` using optimistic locking (a `@Version var version: Long` column on `ProductJpaEntity`, matching `product.version`); retry once on `OptimisticLockException`, then return `409`.
 5. **Payment idempotency**: every payment attempt generates a unique `idempotencyKey` (UUID); `PaymentPortImpl` checks for an existing payment with the same key before calling the gateway.
 6. **Cart isolation**: anonymous carts are keyed by `sessionId` (TTL 30 min); authenticated carts by `customerId` (TTL 7 days). `CartPortImpl.merge()` handles the login merge.
 7. **Webhook security**: `WebhookResource` validates the gateway signature before delegating to `PaymentPort.processWebhook()`; invalid signatures return `400` immediately.
-8. **Admin endpoints**: all paths under `/api/admin/**` require `@RolesAllowed("admin")`; protect at the resource method level, not globally.
+8. **Admin endpoints**: all paths under `/api/admin/**` require `@RolesAllowed` with `STAFF`/`MANAGER`/`ADMIN` as the contract lists per endpoint; protect at the resource method level, not globally.
 9. **Pagination**: all list endpoints accept `?page=0&size=20`; default page size is 20, max 100.
 10. **No null leakage**: all repository output ports return `T?` (nullable); services convert `null` to `ResourceNotFoundException` before returning to the resource layer.
 
 ---
 
-## How to use this skill
-1. Load `tech-arch-hexagonal`, `tech-good-practices`, and `tech-stack-kotlin-quarkus-rest` for the full technical foundation.
-2. Load the relevant web store domain skills for the module being implemented.
-3. Apply the project structure and naming conventions defined here to all web store Kotlin + Quarkus implementation work.
-4. Use `PaymentGatewayPort` to keep gateway-specific code isolated in `infrastructure/gateway/`.
-5. Refer to `webstore-data-structure` for the relational schema, DDL, and migration reference.
-6. Refer to `webstore-inventory` for optimistic locking patterns on stock deduction.
-7. Use `webstore-checkout` for the `placeOrder` transaction boundaries.
-8. Respond and assist in English unless the user requests another language.
-9. Await further instructions from the user and execute them accordingly.
+## Workflow — implementing or changing a module
+
+1. **Scope.** Identify the module and its use cases from the module skill. If the request is ambiguous (which use cases? admin side too?), ask before coding.
+2. **Domain.** Add or adjust entities and value objects in `domain/model/`, expressing invariants as methods. Write plain unit tests for every business rule in the module skill, with no Quarkus context.
+3. **Ports.** Update the input port in `application/port/in/` and the output ports in `application/port/out/`.
+4. **Service.** Implement `<Module>PortImpl` with the transaction boundary at the use-case level. Unit-test it against in-memory fakes of the output ports.
+5. **Persistence adapter.** Add the Panache entity, repository, mapper and `<Entity>PersistenceAdapterImpl`. For any schema change, add a new Flyway migration; never edit an applied one.
+6. **REST adapter.** Add the resource and DTOs exactly as in the `webstore-api-contract` section: same path, method, access rule, status codes and RFC 9457 errors. Add nothing the contract doesn't list.
+7. **Tests.** Write API tests (`@QuarkusTest` + RestAssured) for each endpoint: the happy path plus every error status the contract documents for it. Use Testcontainers PostgreSQL for persistence tests.
+8. **Verify.** Run `./gradlew build`, then open `/v3/api-docs` and compare the module's paths with the contract.
+
+## Done criteria
+
+A module is done only when all of these hold:
+
+- [ ] `domain/` has no Quarkus, JPA or HTTP imports (`grep -rE "io\.quarkus|jakarta\.persistence|jakarta\.ws" <domain dir>` returns nothing).
+- [ ] Every endpoint in the module's contract section exists with the documented path, method, access rule and status codes, and there are no extra endpoints.
+- [ ] Every business rule in the module skill has at least one unit test that fails when the rule is broken.
+- [ ] Errors are RFC 9457 Problem Details with the contract's status codes. No stack traces or entity internals leak.
+- [ ] Module-specific checks pass:
+  - **checkout:** order creation and stock deduction share one transaction, the optimistic-lock conflict retries once then returns `409`, and order-line prices are frozen.
+  - **cart:** every endpoint works without a JWT via the `sessionId` cookie, and `POST /api/cart/merge` sums quantities capped at stock.
+  - **orders:** every status change goes through the state machine, and cancellation restores stock.
+  - **payments:** webhooks verify the signature before parsing and are idempotent on `gatewayReference`. No card data is stored or logged.
+  - **inventory:** every stock change writes an audit-log row.
+- [ ] `./gradlew build` is green with no new warnings, and there are no TODOs left in the changed code.
+
+Architecture reminders: keep gateway-specific code behind `PaymentGatewayPort` in `infrastructure/gateway/`, follow `webstore-checkout` for the `placeOrder` transaction boundary, and apply the Key Webstore-Specific Rules above.

@@ -1,12 +1,11 @@
 ---
 name: webstore-backoffice
-description: Use when the user invokes /webstore-backoffice or asks about the web store backoffice module — admin product management, order management, inventory adjustments, customer management, coupon management, and reporting.
+description: Web store back-office (admin) module rules: product and category management, order handling, inventory adjustments, customer deactivation, coupon management, sales reports, and the STAFF/MANAGER/ADMIN role model. Use when building admin features for the web store.
 ---
 
 # Web Store — Backoffice Module
 
-## When to use this skill
-Activate when the user types `/webstore-backoffice` or asks about admin-facing operations: managing products, categories, orders, inventory, customers, coupons, or generating reports.
+## Related skills
 
 > Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
@@ -89,69 +88,17 @@ Activate when the user types `/webstore-backoffice` or asks about admin-facing o
 
 ---
 
-## REST Endpoints
+## API
 
-### Products & Categories
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/admin/products` | Create product |
-| `PUT` | `/api/admin/products/{id}` | Full update |
-| `PATCH` | `/api/admin/products/{id}` | Partial update |
-| `DELETE` | `/api/admin/products/{id}` | Archive |
-| `PATCH` | `/api/admin/products/{id}/restore` | Restore from archived |
-| `POST` | `/api/admin/categories` | Create category |
-| `PUT` | `/api/admin/categories/{id}` | Update category |
-| `DELETE` | `/api/admin/categories/{id}` | Delete category |
-
-### Orders
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/admin/orders` | List all orders (`?status=`, `?customerId=`, `?from=`, `?to=`, `?q=`) |
-| `GET` | `/api/admin/orders/{id}` | Full order detail |
-| `PATCH` | `/api/admin/orders/{id}/status` | Advance status (body: `status`, `trackingCarrier`, `trackingNumber`) |
-| `DELETE` | `/api/admin/orders/{id}` | Cancel order |
-
-### Inventory
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/admin/inventory` | All stock levels (`?lowStock=true`) |
-| `GET` | `/api/admin/inventory/{productId}` | Stock level for one product |
-| `PATCH` | `/api/admin/inventory/{productId}` | Manual adjustment (`delta`, `reason`, `actor`) |
-| `GET` | `/api/admin/inventory/{productId}/audit` | Audit log for one product |
-
-### Customers
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/admin/customers` | List customers (`?q=`, `?page=`, `?size=`) |
-| `GET` | `/api/admin/customers/{id}` | Customer detail |
-| `PATCH` | `/api/admin/customers/{id}/deactivate` | Deactivate customer |
-| `PATCH` | `/api/admin/customers/{id}/reactivate` | Reactivate customer |
-
-### Coupons
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/admin/coupons` | List coupons (`?active=`, `?expired=`) |
-| `POST` | `/api/admin/coupons` | Create coupon |
-| `PUT` | `/api/admin/coupons/{id}` | Update coupon |
-| `PATCH` | `/api/admin/coupons/{id}/activate` | Activate |
-| `PATCH` | `/api/admin/coupons/{id}/deactivate` | Deactivate |
-| `GET` | `/api/admin/coupons/{id}/usage` | Usage details |
-
-### Reports
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/admin/reports/sales` | Sales summary (`?from=`, `?to=`) |
-| `GET` | `/api/admin/reports/top-products` | Top products (`?from=`, `?to=`, `?limit=10`, `?by=units\|revenue`) |
-| `GET` | `/api/admin/reports/low-stock` | Low-stock report |
-| `GET` | `/api/admin/reports/order-status` | Order status breakdown (`?from=`, `?to=`) |
-| `GET` | `/api/admin/reports/revenue-by-category` | Revenue by category (`?from=`, `?to=`) |
+Endpoints, access rules and DTOs are defined only in the `webstore-api-contract` skill; load it before writing or calling an endpoint. For this module see the Admin sections of the contract (`/api/admin/**`). Access control below is summarised there per endpoint.
 
 ---
 
 ## Access Control
-- All `/api/admin/**` endpoints require `ROLE_ADMIN`.
-- Report endpoints may additionally require `ROLE_MANAGER` for sensitive revenue data.
-- Customer and product endpoints accessible to `ROLE_ADMIN` and `ROLE_STAFF` (read-only for staff).
+- Three back-office roles: `STAFF` (read-only), `MANAGER` (read + revenue reports), and `ADMIN` (everything).
+- Every `/api/admin/**` read is open to staff. Every write (create, update, archive, adjust, status change, cancel) is admin-only.
+- Revenue reports (`sales`, `top-products`, `revenue-by-category`) require `MANAGER` or `ADMIN`.
+- The exact role for each endpoint is in `webstore-api-contract`.
 
 ---
 
@@ -168,8 +115,6 @@ Activate when the user types `/webstore-backoffice` or asks about admin-facing o
 ## How to use this skill
 1. Load `webstore-domain` for entity and rule definitions.
 2. Load the relevant module skills when implementing a specific backoffice area (catalog, orders, inventory, payments).
-3. Always enforce `ROLE_ADMIN` on all `/api/admin/**` routes.
+3. Enforce the per-endpoint roles from `webstore-api-contract` on every `/api/admin/**` route (staff read, admin write, manager for revenue reports).
 4. Use the use cases list to name application services and input ports.
 5. For reports, prefer dedicated read-model queries over full-aggregate loading.
-6. Respond and assist in English unless the user requests another language.
-7. Await further instructions from the user and execute them accordingly within the backoffice module context.

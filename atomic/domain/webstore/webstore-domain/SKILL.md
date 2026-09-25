@@ -1,12 +1,9 @@
 ---
 name: webstore-domain
-description: Use when the user invokes /webstore-domain or asks about the web store domain model — core entities, business rules, value objects, and module responsibilities.
+description: Web store domain model: the entities (Product, Category, Customer, Cart, CartItem, Coupon, Order, OrderItem, Payment), their fields and invariants, value objects (Money, Address, ShippingMethod), domain events, and which module owns what. Use when designing, implementing or reviewing any part of the web store, before loading a specific webstore module skill.
 ---
 
 # Web Store — Domain Specification
-
-## When to use this skill
-Activate when the user types `/webstore-domain` or asks about the business model, entities, or rules of the web store system.
 
 ## Domain Overview
 The web store manages the full lifecycle of an e-commerce operation: catalog browsing, cart management, checkout, order fulfillment, payments, and inventory. All domain knowledge is technology-agnostic.
@@ -131,5 +128,3 @@ The web store manages the full lifecycle of an e-commerce operation: catalog bro
 2. Reference domain events when designing asynchronous flows or outbox patterns.
 3. Use value objects for money and address fields — never use raw primitives for price or currency.
 4. Consult module responsibilities to assign use cases to the correct bounded context.
-5. Respond in English unless the user requests another language.
-6. Await further instructions from the user and execute them accordingly within the web store domain context.
