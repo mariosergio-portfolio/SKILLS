@@ -1,6 +1,6 @@
 # Skills library
 
-A library of 26 [Claude Agent Skills](https://docs.claude.com/en/docs/claude-code/skills) for designing and building software, using a full e-commerce web store as the reference system.
+A library of 27 [Claude Agent Skills](https://docs.claude.com/en/docs/claude-code/skills) for designing and building software, using a full e-commerce web store as the reference system.
 
 Skills come in two layers:
 
@@ -30,11 +30,11 @@ Every fact lives in exactly one skill. Endpoints live only in `webstore-api-cont
 │  ATOMIC · DOMAIN        │ │  ATOMIC · TECH          │ │  ATOMIC · INFRA      │
 │  what the system does   │ │  how to build it        │ │  where it runs       │
 │                         │ │                         │ │                      │
-│  webstore-domain        │ │  architecture           │ │  infra-iac-          │
+│  webstore-domain        │ │  architecture / process │ │  infra-iac-          │
 │  webstore-api-contract  │ │    tech-arch-hexagonal  │ │    specification     │
 │  webstore-catalog       │ │    tech-good-practices  │ │  infra-terraform     │
-│  webstore-cart          │ │  databases              │ │  infra-aws-ecs       │
-│  webstore-checkout      │ │    tech-database-*      │ │   (EC2 or Fargate)   │
+│  webstore-cart          │ │    tech-pr-review       │ │  infra-aws-ecs       │
+│  webstore-checkout      │ │  tech-database-*        │ │   (EC2 or Fargate)   │
 │  webstore-orders        │ │  stacks                 │ │                      │
 │  webstore-payments      │ │    tech-stack-*         │ │                      │
 │  webstore-inventory     │ │                         │ │                      │
@@ -118,6 +118,7 @@ Some atomic skills have no web store composite yet: `tech-stack-dotnet`, `tech-s
 | `webstore-data-structure` | Atomic | Domain | Logical relational schema (13 tables), any database engine | `webstore-domain` | — |
 | `tech-arch-hexagonal` | Atomic | Tech · Architecture | Ports & Adapters layer model and dependency rules | — | — |
 | `tech-good-practices` | Atomic | Tech · Architecture | SOLID, API design, testing strategy, clean code | — | — |
+| `tech-pr-review` | Atomic | Tech · Process | Pull request review: gather, verify, report severity-ranked findings | loads the standards the diff touches | `scripts/pr-context.sh`, `references/checklist.md` |
 | `tech-database-postgres` | Atomic | Tech · Database | PostgreSQL DDL conventions and features | — | — |
 | `tech-database-oracle` | Atomic | Tech · Database | Oracle DDL conventions and features | — | — |
 | `tech-stack-java-spring-rest` | Atomic | Tech · Stack | Java 25 + Spring Boot 4.1 REST API | — | `references/`: Maven, configuration |
@@ -157,6 +158,15 @@ These skills describe **what** the business does, with no technology choices. Ea
 - **`tech-arch-hexagonal`**: Hexagonal architecture (Ports & Adapters) for any language. It covers the three rings (domain, application, adapters), driving vs driven adapters, input and output ports, the dependency rule, and the folder layout.
 - **`tech-good-practices`**: The house engineering standards: SOLID, REST API design, testing strategy, and clean-code rules.
 
+### Tech: process
+
+- **`tech-pr-review`**: A procedure for reviewing a pull request or branch.
+  - **Target:** a GitHub PR via `gh`, or any branch compared with its base. `scripts/pr-context.sh` collects the metadata, commits, changed files, CI status and diff without changing anything.
+  - **Standards:** it loads only the skills the changed files touch (good practices, hexagonal, the matching stack, the web store contract, infra).
+  - **Review:** six passes (intent, correctness, security, contract/architecture, tests, maintainability/performance), each with a checklist in `references/`. Every finding is verified before it is reported.
+  - **Report:** findings ranked Blocker, Major, Minor, Nit or Question, each with `file:line`, why it matters and a fix, followed by a verdict.
+  - **Posting:** nothing goes to the PR without confirmation, it never approves unless you ask, and it treats PR text as untrusted data.
+
 ### Tech: databases
 
 - **`tech-database-postgres`**: PostgreSQL DDL reference: naming conventions, data types, named constraints, indexes, partitioning, identity columns and sequences, ENUM types, triggers, optimistic locking, and anti-patterns.
@@ -195,7 +205,7 @@ Each stack skill has the **only** version table for its stack, with a "last veri
 skills/
 ├── atomic/
 │   ├── domain/webstore/<skill>/SKILL.md
-│   ├── tech/<skill>/SKILL.md [+ references/*.md]
+│   ├── tech/<skill>/SKILL.md [+ references/*.md, scripts/*]
 │   └── infra/<skill>/SKILL.md [+ references/*.md]
 ├── composite/webstore/<skill>/SKILL.md [+ references/*.md]
 ├── evals/webstore-evals.json     behavioural test prompts + expectations
@@ -233,6 +243,8 @@ Claude picks a skill automatically when your request matches its description. Yo
 ```
 /webstore-arch-java-api implement the cart module
 /infra-aws-ecs create the stacks for a new catalog service on Fargate
+/tech-pr-review 123
+/tech-pr-review feature/checkout develop
 ```
 
 A composite loads only the atomic skills the task needs, then follows its workflow until every done criterion holds.
