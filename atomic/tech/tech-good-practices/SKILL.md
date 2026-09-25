@@ -1,12 +1,12 @@
 ---
 name: tech-good-practices
-description: Use when the user invokes %tech-good-practices or asks about software engineering good practices — SOLID principles, API design guidelines, testing strategy, and clean coding rules. Language-agnostic and domain-agnostic.
+description: Use when the user invokes /tech-good-practices or asks about software engineering good practices — SOLID principles, API design guidelines, testing strategy, and clean coding rules. Language-agnostic and domain-agnostic.
 ---
 
 # Architecture Good Practices
 
 ## When to use this skill
-Activate when the user types `%tech-good-practices` or asks about SOLID principles, clean code rules, API design, or testing strategy — regardless of programming language or application domain.
+Activate when the user types `/tech-good-practices` or asks about SOLID principles, clean code rules, API design, or testing strategy — regardless of programming language or application domain.
 
 ---
 

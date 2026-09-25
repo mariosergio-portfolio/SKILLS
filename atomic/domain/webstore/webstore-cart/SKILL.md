@@ -1,15 +1,17 @@
 ---
 name: webstore-cart
-description: Use when the user invokes %webstore-cart or asks about the web store cart module — adding/removing items, quantity updates, coupon application, price refresh, anonymous vs authenticated carts, and cart merging on login.
+description: Use when the user invokes /webstore-cart or asks about the web store cart module — adding/removing items, quantity updates, coupon application, price refresh, anonymous vs authenticated carts, and cart merging on login.
 ---
 
 # Web Store — Cart Module
 
 ## When to use this skill
-Activate when the user types `%webstore-cart` or asks about cart operations: adding items, updating quantities, removing items, applying coupons, refreshing prices, or merging anonymous carts on login.
+Activate when the user types `/webstore-cart` or asks about cart operations: adding items, updating quantities, removing items, applying coupons, refreshing prices, or merging anonymous carts on login.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — Cart, CartItem, Coupon entity definitions and business rules
+- `webstore-domain` — Cart, CartItem, Coupon entity definitions and business rules
 
 ---
 
@@ -84,7 +86,7 @@ Activate when the user types `%webstore-cart` or asks about cart operations: add
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` for full entity and coupon rule definitions.
+1. Load `webstore-domain` for full entity and coupon rule definitions.
 2. Use the use cases list to name application services and input ports.
 3. Follow REST endpoints when implementing or reviewing cart controllers.
 4. Enforce price refresh and coupon validation rules at every checkout entry point.

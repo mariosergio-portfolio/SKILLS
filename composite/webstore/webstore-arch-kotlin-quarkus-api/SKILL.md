@@ -1,27 +1,29 @@
 ---
 name: webstore-arch-kotlin-quarkus-api
-description: Use when the user invokes %webstore-arch-kotlin-quarkus-api or asks about implementing the web store back-end in Kotlin + Quarkus — project structure, domain entities, port/adapter naming, REST endpoints, and configuration for the e-commerce REST API using Hexagonal Architecture.
+description: Use when the user invokes /webstore-arch-kotlin-quarkus-api or asks about implementing the web store back-end in Kotlin + Quarkus — project structure, domain entities, port/adapter naming, REST endpoints, and configuration for the e-commerce REST API using Hexagonal Architecture.
 ---
 
 # Web Store — Kotlin + Quarkus API Implementation
 
 ## When to use this skill
-Activate when the user types `%webstore-arch-kotlin-quarkus-api` or asks about implementing the web store back-end in Kotlin + Quarkus.
+Activate when the user types `/webstore-arch-kotlin-quarkus-api` or asks about implementing the web store back-end in Kotlin + Quarkus.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load these foundation skills first:**
-- `%tech-arch-hexagonal` — hexagonal architecture, three rings, ports, adapters, dependency rules, folder layout
-- `%tech-good-practices` — SOLID principles, clean code, API design, testing strategy
-- `%tech-stack-kotlin-quarkus-rest` — Kotlin 2.4 + Quarkus 3.38 stack, Gradle, OpenAPI, H2, MapStruct
+- `tech-arch-hexagonal` — hexagonal architecture, three rings, ports, adapters, dependency rules, folder layout
+- `tech-good-practices` — SOLID principles, clean code, API design, testing strategy
+- `tech-stack-kotlin-quarkus-rest` — Kotlin 2.4 + Quarkus 3.38 stack, Gradle, OpenAPI, H2, MapStruct
 
 **Load these web store domain skills for the module being implemented:**
-- `%webstore-domain` — all entities, business rules, and module responsibilities
-- `%webstore-catalog` — Module: products and categories
-- `%webstore-cart` — Module: cart lifecycle and coupon logic
-- `%webstore-checkout` — Module: order placement and price freeze
-- `%webstore-orders` — Module: order lifecycle and status transitions
-- `%webstore-payments` — Module: gateway integration and webhooks
-- `%webstore-inventory` — Module: stock management and audit log
-- `%webstore-backoffice` — Module: admin product/order/inventory/customer/coupon management and reports
+- `webstore-domain` — all entities, business rules, and module responsibilities
+- `webstore-catalog` — Module: products and categories
+- `webstore-cart` — Module: cart lifecycle and coupon logic
+- `webstore-checkout` — Module: order placement and price freeze
+- `webstore-orders` — Module: order lifecycle and status transitions
+- `webstore-payments` — Module: gateway integration and webhooks
+- `webstore-inventory` — Module: stock management and audit log
+- `webstore-backoffice` — Module: admin product/order/inventory/customer/coupon management and reports
 
 ---
 
@@ -319,149 +321,7 @@ class ProductResource(
 
 ## Persistence — Driven Adapters (Panache)
 
-```kotlin
-// infrastructure/persistence/entity/ProductJpaEntity.kt
-@Entity
-@Table(name = "products")
-class ProductJpaEntity {
-    @Id
-    var id: UUID = UUID.randomUUID()
-
-    @Column(unique = true, nullable = false)
-    var sku: String = ""
-
-    var name: String = ""
-    var description: String = ""
-
-    @Column(name = "price_amount", nullable = false, precision = 19, scale = 4)
-    var priceAmount: BigDecimal = BigDecimal.ZERO
-
-    @Column(name = "price_currency", nullable = false, length = 3)
-    var priceCurrency: String = "USD"
-
-    @Column(name = "stock_quantity", nullable = false)
-    var stockQuantity: Int = 0
-
-    @Column(name = "category_id", nullable = false)
-    var categoryId: UUID = UUID.randomUUID()
-
-    @Enumerated(EnumType.STRING)
-    var status: ProductStatus = ProductStatus.DRAFT
-
-    @Column(name = "created_at", nullable = false)
-    var createdAt: Instant = Instant.now()
-
-    @Column(name = "updated_at", nullable = false)
-    var updatedAt: Instant = Instant.now()
-}
-
-// infrastructure/persistence/repository/ProductPanacheRepository.kt
-@ApplicationScoped
-class ProductPanacheRepository : PanacheRepositoryBase<ProductJpaEntity, UUID>
-
-// infrastructure/persistence/adapter/ProductPersistenceAdapterImpl.kt
-@ApplicationScoped
-class ProductPersistenceAdapterImpl(
-    private val repo: ProductPanacheRepository,
-    private val mapper: ProductPersistenceMapper,
-) : ProductRepository {
-
-    override fun save(product: Product): Product =
-        mapper.toDomain(repo.getEntityManager().merge(mapper.toJpa(product)))
-
-    override fun findById(id: UUID): Product? =
-        repo.findById(id)?.let(mapper::toDomain)
-
-    override fun findAll(page: Int, size: Int): List<Product> =
-        repo.findAll().page(page, size).list().map(mapper::toDomain)
-
-    override fun existsBySku(sku: String): Boolean =
-        repo.count("sku", sku) > 0
-
-    override fun deleteById(id: UUID) =
-        repo.deleteById(id)
-}
-```
-
-**Key rules:**
-- Use `PanacheRepositoryBase<E, ID>` (Repository pattern) — not Active Record (`PanacheEntity`), to keep the domain model clean.
-- JPA entities (`*JpaEntity`) are internal to the persistence package — never leak them to the application or domain.
-- Map via `ProductPersistenceMapper` (MapStruct); never pass JPA entities to the service layer.
-- Use optimistic locking (`@Version`) on `OrderJpaEntity` and `ProductJpaEntity` (stock field) to prevent lost-update races.
-
----
-
-## MapStruct Mappers
-
-```kotlin
-// infrastructure/rest/catalog/ProductRestMapper.kt
-@Mapper(componentModel = "cdi")
-interface ProductRestMapper {
-    fun toResponse(product: Product): ProductResponse
-    fun toDomain(request: ProductRequest): Product
-}
-
-// infrastructure/persistence/adapter/ProductPersistenceMapper.kt
-@Mapper(componentModel = "cdi")
-interface ProductPersistenceMapper {
-    @Mapping(source = "price.amount", target = "priceAmount")
-    @Mapping(source = "price.currency", target = "priceCurrency")
-    fun toJpa(product: Product): ProductJpaEntity
-
-    @Mapping(source = "priceAmount", target = "price.amount")
-    @Mapping(source = "priceCurrency", target = "price.currency")
-    fun toDomain(entity: ProductJpaEntity): Product
-}
-```
-
----
-
-## Global Exception Mapper
-
-```kotlin
-// infrastructure/config/GlobalExceptionMapper.kt
-@Provider
-class GlobalExceptionMapper : ExceptionMapper<Exception> {
-
-    override fun toResponse(exception: Exception): Response {
-        val (status, message) = when (exception) {
-            is ResourceNotFoundException         -> 404 to exception.message
-            is BusinessRuleException             -> 422 to exception.message
-            is InsufficientStockException        -> 422 to exception.message
-            is InvalidStatusTransitionException  -> 422 to exception.message
-            is ConstraintViolationException      -> 400 to exception.message
-            else                                 -> 500 to "Internal server error"
-        }
-        val body = mapOf(
-            "status"    to status,
-            "message"   to message,
-            "timestamp" to Instant.now().toString(),
-        )
-        return Response.status(status).entity(body).type(MediaType.APPLICATION_JSON).build()
-    }
-}
-```
-
----
-
-## OpenAPI Config
-
-```kotlin
-// infrastructure/config/OpenApiConfig.kt
-@OpenAPIDefinition(
-    info = Info(
-        title = "Web Store API",
-        description = "REST API for the Web Store e-commerce system",
-        version = "1.0.0"
-    )
-)
-@ApplicationScoped
-class OpenApiConfig
-```
-
-Add `@Tag(name = "Catalog")`, `@Tag(name = "Cart")`, `@Tag(name = "Orders")`, etc. to each `@Path` resource class.
-
----
+Details: [references/driven-adapters.md](references/driven-adapters.md). Read it when implementing persistence, MapStruct mappers, error handling, or OpenAPI config.
 
 ## REST Endpoint Summary
 
@@ -550,65 +410,7 @@ mp.jwt.verify.issuer=https://auth.mycompany.com
 
 ## Testing Strategy
 
-### Unit tests — Application services
-```kotlin
-// Test ProductPortImpl in isolation — mock all output ports
-@ExtendWith(MockitoExtension::class)
-class ProductPortImplTest {
-
-    @Mock lateinit var productRepository: ProductRepository
-    @InjectMocks lateinit var productPort: ProductPortImpl
-
-    @Test
-    fun `should throw BusinessRuleException when SKU already exists`() {
-        // Arrange
-        whenever(productRepository.existsBySku("SKU-001")).thenReturn(true)
-        val product = aProduct(sku = "SKU-001")
-
-        // Act / Assert
-        assertThrows<BusinessRuleException> { productPort.create(product) }
-    }
-}
-```
-
-### Integration tests — Persistence adapters
-```kotlin
-@QuarkusTest
-@TestProfile(H2TestProfile::class)
-class ProductPersistenceAdapterImplTest {
-    @Inject lateinit var adapter: ProductRepository
-
-    @Test
-    fun `should persist and retrieve product by id`() {
-        val saved = adapter.save(aProduct())
-        val found = adapter.findById(saved.id)
-        assertNotNull(found)
-        assertEquals(saved.sku, found!!.sku)
-    }
-}
-```
-
-### API tests — REST resources
-```kotlin
-@QuarkusTest
-@TestSecurity(user = "admin", roles = ["admin"])
-class ProductResourceTest {
-
-    @Test
-    fun `should return 201 when product is created`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"sku":"SKU-001","name":"Widget","price":{"amount":9.99,"currency":"USD"}}""")
-        .`when`()
-            .post("/api/products")
-        .then()
-            .statusCode(201)
-            .header("Location", containsString("/api/products/"))
-    }
-}
-```
-
----
+Details: [references/testing.md](references/testing.md). Read it when writing tests.
 
 ## Key Webstore-Specific Rules
 
@@ -626,12 +428,12 @@ class ProductResourceTest {
 ---
 
 ## How to use this skill
-1. Load `%tech-arch-hexagonal`, `%tech-good-practices`, and `%tech-stack-kotlin-quarkus-rest` for the full technical foundation.
+1. Load `tech-arch-hexagonal`, `tech-good-practices`, and `tech-stack-kotlin-quarkus-rest` for the full technical foundation.
 2. Load the relevant web store domain skills for the module being implemented.
 3. Apply the project structure and naming conventions defined here to all web store Kotlin + Quarkus implementation work.
 4. Use `PaymentGatewayPort` to keep gateway-specific code isolated in `infrastructure/gateway/`.
-5. Refer to `%webstore-data-structure` for the relational schema, DDL, and migration reference.
-6. Refer to `%webstore-inventory` for optimistic locking patterns on stock deduction.
-7. Use `%webstore-checkout` for the `placeOrder` transaction boundaries.
+5. Refer to `webstore-data-structure` for the relational schema, DDL, and migration reference.
+6. Refer to `webstore-inventory` for optimistic locking patterns on stock deduction.
+7. Use `webstore-checkout` for the `placeOrder` transaction boundaries.
 8. Respond and assist in English unless the user requests another language.
 9. Await further instructions from the user and execute them accordingly.

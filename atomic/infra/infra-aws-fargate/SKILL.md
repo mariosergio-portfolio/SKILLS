@@ -1,14 +1,14 @@
 ---
-name: infra-aws-FARGATE
-description: Use when the user invokes %infra-aws-FARGATE or asks about deploying a full-stack application (frontend + backend) on AWS using CloudFormation IaC with ECS Fargate launch type — serverless compute, no EC2 instances to manage, cost-effective for test/dev.
+name: infra-aws-fargate
+description: Use when the user invokes /infra-aws-fargate or asks about deploying a full-stack application (frontend + backend) on AWS using CloudFormation IaC with ECS Fargate launch type — serverless compute, no EC2 instances to manage, cost-effective for test/dev.
 ---
 
 # AWS Full-Stack Deployment — ECS Fargate (CloudFormation IaC)
 
 ## When to use this skill
-Activate when the user types `%infra-aws-FARGATE` or asks about deploying a full-stack application on AWS using ECS with the **Fargate launch type** (serverless — no EC2 instances or ASG to manage).
+Activate when the user types `/infra-aws-fargate` or asks about deploying a full-stack application on AWS using ECS with the **Fargate launch type** (serverless — no EC2 instances or ASG to manage).
 
-**This skill is a provider implementation of `%infra-IaC-specification`** — it realises every contract defined in that specification using AWS CloudFormation, ECS Fargate, Aurora PostgreSQL, and CodeBuild.
+**This skill is a provider implementation of `infra-iac-specification`** — it realises every contract defined in that specification using AWS CloudFormation, ECS Fargate, Aurora PostgreSQL, and CodeBuild.
 
 > **Why Fargate for test/dev?** No idle EC2 host cost — you pay only for the vCPU/memory reserved by running tasks. A single `0.5 vCPU / 1024 MB` task costs ~$0.016/hour (~$11.50/month). Compare to 1 × `t3.medium` EC2 host ~$30/month regardless of task count.
 
@@ -180,125 +180,7 @@ cloudFormation/
 
 ## Stack Details
 
-### `aws-vpc-stack.yml` (product-level, deploy once)
-**Parameters:** `ProductName`, `Environment`, `VpcCidr` (default `10.0.0.0/16`), `PublicSubnetACidr` (default `10.0.0.0/24`), `PublicSubnetBCidr` (default `10.0.1.0/24`), `PrivateSubnetACidr` (default `10.0.10.0/24`), `PrivateSubnetBCidr` (default `10.0.11.0/24`), `ContainerPort` (default `8080`).
-
-**Creates:**
-- VPC (`10.0.0.0/16`), Internet Gateway
-- 2 public subnets (ALB + NAT, across 2 AZs) — `MapPublicIpOnLaunch: true`
-- 2 private subnets (Fargate tasks, across 2 AZs) — `MapPublicIpOnLaunch: false`
-- Single NAT Gateway in Public Subnet A (cost-optimised, one AZ)
-- Public route table → IGW; Private route table → NAT Gateway
-- `sg-alb` — inbound TCP :80 from `0.0.0.0/0`
-- `sg-ecs` — inbound `ContainerPort` from `sg-alb` only
-- `sg-rds` — inbound TCP :5432 from `sg-ecs` only (Aurora PostgreSQL)
-
-**Exports (prefix `${Environment}-${ProductName}`):**
-`-vpc-id`, `-public-subnet-a`, `-public-subnet-b`, `-private-subnet-a`, `-private-subnet-b`, `-sg-alb-id`, `-sg-ecs-id`, `-sg-rds-id`
-
-**Tags on every resource:** `ProductName`, `Environment`, `ManagedBy=cloudformation`
-
----
-
-### `aws-ecs-infra-stack.yml` (product-level, deploy once)
-**Parameters:** `ProductName`, `Environment`.
-
-**Creates:**
-- ECS Cluster: `${Environment}-${ProductName}-cluster`
-- ALB (internet-facing, HTTP :80): `${Environment}-${ProductName}-alb` — subnets and security group imported from VPC stack
-- ALB Listener (HTTP :80): default action = `fixed-response 404 {"error":"not found"}` — each per-service stack adds its own `ListenerRule`
-
-**Exports (prefix `${Environment}-${ProductName}`):**
-`-ecs-cluster-name`, `-ecs-cluster-arn`, `-alb-arn`, `-alb-listener-arn`, `-alb-dns`
-
----
-
-### `per-service/aws-codebuild-stack.yml` (per microservice, deploy once)
-**Parameters:** `ProductName`, `AwsAccountId`, `Environment`, `AppServiceName`, `GitHubOwner`, `GitHubRepo`, `GitHubBranch` (default `main`), `GitHubConnectionArn`, `BuildSpecFile` (default `buildspec.yml`), `ImageTag` (default `latest`), `ComputeType` (default `BUILD_GENERAL1_SMALL`), `BuildTimeoutMinutes` (default `30`), `LogRetentionDays` (default `30`).
-
-**Creates:**
-- ECR repository: `${Environment}-${ProductName}-${AppServiceName}-repo` (`ImageTagMutability: IMMUTABLE`, `ScanOnPush: true`)
-- CloudWatch Log Group: `/aws/codebuild/${Environment}-${ProductName}-${AppServiceName}-codebuild`
-- CodeBuild IAM role with policies: ECR push, CloudWatch Logs, S3 artifacts, CodeConnections, CodeBuild Reports
-- CodeBuild project: GitHub source (CODECONNECTIONS auth), `PrivilegedMode: true`, Docker layer + source cache, `LINUX_CONTAINER`, `standard:7.0`, `LINUX_KERNEL_6`
-- Environment variables injected at build time: `AWS_DEFAULT_REGION`, `AWS_ACCOUNT_ID`, `ECR_REPO`, `IMAGE_TAG`
-
-**Exports:** `-ecr-repository-uri`, `-codebuild-project-name`, `-codebuild-project-arn`, `-codebuild-service-role-arn`, `-codebuild-log-group-name`
-
----
-
-### `per-service/aws-iam-stack.yml` (per microservice, deploy once)
-**Parameters:** `ProductName`, `Environment`, `AppServiceName`.
-
-**Creates:**
-- `EcsTaskExecutionRole` — `AmazonECSTaskExecutionRolePolicy` managed policy (ECR pull + CloudWatch Logs)
-- `EcsTaskRole` — inline policies:
-  - CloudWatch Logs: `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` scoped to `/ecs/${Environment}-${ProductName}-${AppServiceName}*`
-  - Secrets Manager: `secretsmanager:GetSecretValue` scoped to `${Environment}-${ProductName}-${AppServiceName}-db-secret*` (allows the task to read the Aurora password)
-- **No EC2 instance role or instance profile** (Fargate only)
-
-**Role naming:** `${Environment}-${ProductName}-${AppServiceName}-ecs-task-execution-role` / `-ecs-task-role`
-
-**Exports:** `${Environment}-${ProductName}-${AppServiceName}-ecs-task-execution-role-arn`, `-ecs-task-role-arn`
-
----
-
-### `per-service/aws-rds-aurora-stack.yml` (per microservice, deploy once)
-**Parameters:** `ProductName`, `Environment`, `AppServiceName`, `DbName` (default `appdb`), `DbInstanceClass` (default `db.t3.medium`), `AuroraEngineVersion` (default `15.4`), `BackupRetentionDays` (default `7`), `DeletionProtection` (default `false` for dev, `true` for prod).
-
-**Creates:**
-- **Secrets Manager secret:** `${Environment}-${ProductName}-${AppServiceName}-db-secret` — stores `{ "username": "appuser", "password": "<auto-generated>" }` using `GenerateSecretString`. The ECS task reads this secret at runtime; the password is **never stored in SSM or CloudFormation parameters**.
-- **DB Subnet Group** — covers both private subnets (imported from VPC stack); named `${Environment}-${ProductName}-${AppServiceName}-subnet-group`.
-- **Aurora PostgreSQL Cluster** (`AWS::RDS::DBCluster`):
-  - Engine: `aurora-postgresql`, version from `AuroraEngineVersion`
-  - Cluster identifier: `${Environment}-${ProductName}-${AppServiceName}-cluster`
-  - Database name: `DbName`
-  - Master credentials: resolved from the Secrets Manager secret via `ManageMasterUserPassword: true` (Aurora native integration — no plaintext password in the template)
-  - VPC security group: `sg-rds` imported from VPC stack
-  - Subnet group: created above
-  - `StorageEncrypted: true` — always enabled
-  - `BackupRetentionPeriod`: from `BackupRetentionDays`
-  - `DeletionProtection`: from `DeletionProtection` parameter
-  - `UpdateReplacePolicy: Snapshot`, `DeletionPolicy: Snapshot` — prevents accidental data loss
-- **Aurora Writer Instance** (`AWS::RDS::DBInstance`):
-  - Instance identifier: `${Environment}-${ProductName}-${AppServiceName}-instance-1`
-  - `DBInstanceClass`: from `DbInstanceClass`
-  - `PromotionTier: 0` (writer)
-
-**Exports:** `${Environment}-${ProductName}-${AppServiceName}-db-endpoint`, `-db-port`, `-db-name`, `-db-secret-arn`
-
-**Cross-stack imports consumed:**
-- VPC: `private-subnet-a/b`, `sg-rds-id`
-
----
-
-### `per-service/aws-ecs-service-stack.yml` (per microservice, deploy once)
-**Parameters:** `ProductName`, `Environment`, `AppServiceName`, `ContainerPort` (default `8080`), `HealthCheckPath` (default `/actuator/health`), `HealthCheckIntervalSeconds` (default `30`), `HealthCheckTimeoutSeconds` (default `5`), `HealthyThresholdCount` (default `2`), `UnhealthyThresholdCount` (default `3`), `ListenerRulePriority`, `TaskCpu` (default `512`, allowed: `256/512/1024/2048/4096`), `TaskMemory` (default `1024`), `DesiredCount` (default `0`), `LogRetentionDays` (default `7`).
-
-**Creates:**
-- CloudWatch Log Group: `/ecs/${Environment}-${ProductName}-${AppServiceName}` (tags include `AppServiceName`)
-- Task Definition (`UpdateReplacePolicy: Retain`, `DeletionPolicy: Retain`):
-  - `NetworkMode: awsvpc`, `RequiresCompatibilities: [FARGATE]`
-  - CPU/Memory at task level (Fargate requirement)
-  - Image: `${EcrRepoUri}:{{resolve:ssm:/${Environment}-${ProductName}-${AppServiceName}-imageTag}}` (dynamic SSM resolution)
-  - `ExecutionRoleArn` / `TaskRoleArn` imported from IAM stack
-  - Container env vars: `SPRING_PROFILES_ACTIVE=${Environment}`, `SERVER_PORT=${ContainerPort}`, `DB_HOST` (from RDS stack export), `DB_PORT` (from RDS stack export), `DB_NAME` (from RDS stack export)
-  - `DB_SECRET_ARN` injected as an environment variable; the application reads the secret at startup via the AWS SDK to obtain the username and password — **never inject the password as a plaintext env var**
-  - Log driver: `awslogs` → the log group above
-- ALB Target Group: `TargetType: ip` (required for Fargate `awsvpc`), health check configured from parameters
-- ALB Listener Rule: path-pattern `/${AppServiceName}/*` → forwards to the Target Group; `Priority: ${ListenerRulePriority}`
-- ECS Service: `LaunchType: FARGATE`, `AssignPublicIp: DISABLED`, private subnets, `HealthCheckGracePeriodSeconds: 60`, deployment circuit breaker with `Rollback: true`, `MinimumHealthyPercent: 50`, `MaximumPercent: 200`
-
-**Exports:** `${Environment}-${ProductName}-${AppServiceName}-ecs-service-name`
-
-**Cross-stack imports consumed:**
-- VPC: `vpc-id`, `private-subnet-a/b`, `sg-ecs-id`
-- IAM: `ecs-task-execution-role-arn`, `ecs-task-role-arn`
-- Infra: `ecs-cluster-arn`, `alb-listener-arn`
-- CodeBuild: `ecr-repository-uri`
-- RDS Aurora: `db-endpoint`, `db-port`, `db-name`, `db-secret-arn`
-
----
+Details: [references/stack-details.md](references/stack-details.md). Read it when writing or reviewing any individual CloudFormation stack template.
 
 ## Deployment Order
 
@@ -332,168 +214,11 @@ cloudFormation/
 
 ## Deploy Script Structure
 
-Generate **one deploy script per scope** (product-level and per-service), or a combined script. All scripts follow these conventions:
-
-```bash
-#!/bin/bash
-set -euo pipefail
-
-PRODUCT_NAME="<PRODUCT_NAME>"          # hardcoded — mandatory input
-APP_SERVICE_NAME="<APP_SERVICE_NAME>"  # hardcoded — mandatory input
-
-# Shell env vars (never hardcoded):
-# ENVIRONMENT, AWS_REGION, AWS_ACCOUNT_ID
-```
-
-### Product-level deploy (run once per product)
-```bash
-# [1] VPC
-aws cloudformation deploy \
-  --template-file cloudFormation/generic/aws-vpc-stack.yml \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-vpc" \
-  --region "${AWS_REGION}" \
-  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-  --parameter-overrides \
-    ProductName="${PRODUCT_NAME}" \
-    Environment="${ENVIRONMENT}"
-
-# [2] ECS Infra (Cluster + ALB)
-aws cloudformation deploy \
-  --template-file cloudFormation/generic/aws-ecs-infra-stack.yml \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-ecs-infra" \
-  --region "${AWS_REGION}" \
-  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-  --parameter-overrides \
-    ProductName="${PRODUCT_NAME}" \
-    Environment="${ENVIRONMENT}"
-```
-
-### Per-service deploy (run once per microservice)
-```bash
-# [3] CodeBuild + ECR
-aws cloudformation deploy \
-  --template-file cloudFormation/generic/per-service/aws-codebuild-stack.yml \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-codebuild" \
-  --region "${AWS_REGION}" \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides \
-    ProductName="${PRODUCT_NAME}" \
-    Environment="${ENVIRONMENT}" \
-    AwsAccountId="${AWS_ACCOUNT_ID}" \
-    AppServiceName="${APP_SERVICE_NAME}" \
-    GitHubOwner="<GITHUB_OWNER>" \
-    GitHubRepo="<GITHUB_REPO>" \
-    GitHubBranch="<GITHUB_BRANCH>" \
-    GitHubConnectionArn="<GITHUB_CONNECTION_ARN>"
-
-# [4] Bootstrap SSM image tag parameter
-aws ssm put-parameter \
-  --name "/${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-imageTag" \
-  --value "latest" \
-  --type String \
-  --region "${AWS_REGION}"
-
-# [5] IAM roles
-aws cloudformation deploy \
-  --template-file cloudFormation/generic/per-service/aws-iam-stack.yml \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-iam" \
-  --region "${AWS_REGION}" \
-  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-  --parameter-overrides \
-    ProductName="${PRODUCT_NAME}" \
-    Environment="${ENVIRONMENT}" \
-    AppServiceName="${APP_SERVICE_NAME}"
-
-# [6] Aurora PostgreSQL (Secrets Manager secret + subnet group + cluster + writer instance)
-aws cloudformation deploy \
-  --template-file cloudFormation/generic/per-service/aws-rds-aurora-stack.yml \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-rds" \
-  --region "${AWS_REGION}" \
-  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-  --parameter-overrides \
-    ProductName="${PRODUCT_NAME}" \
-    Environment="${ENVIRONMENT}" \
-    AppServiceName="${APP_SERVICE_NAME}" \
-    DbName="<DB_NAME>" \
-    DbInstanceClass="db.t3.medium" \
-    DeletionProtection="false"
-
-# [7] ECS Service (Task Definition + Service + ALB Rule)
-aws cloudformation deploy \
-  --template-file cloudFormation/generic/per-service/aws-ecs-service-stack.yml \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-ecs-service" \
-  --region "${AWS_REGION}" \
-  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-  --parameter-overrides \
-    ProductName="${PRODUCT_NAME}" \
-    Environment="${ENVIRONMENT}" \
-    AwsAccountId="${AWS_ACCOUNT_ID}" \
-    AppServiceName="${APP_SERVICE_NAME}" \
-    ListenerRulePriority="<LISTENER_RULE_PRIORITY>" \
-    ContainerPort="<CONTAINER_PORT>" \
-    HealthCheckPath="<HEALTH_CHECK_PATH>"
-
-# [8] Start tasks (DesiredCount defaults to 0 — scale up here)
-aws ecs update-service \
-  --cluster "${ENVIRONMENT}-${PRODUCT_NAME}-cluster" \
-  --service "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-service" \
-  --desired-count 1 \
-  --force-new-deployment \
-  --region "${AWS_REGION}"
-```
-
----
+Details: [references/deploy-script.md](references/deploy-script.md). Read it when writing the deploy script.
 
 ## Useful Operations Commands
 
-```bash
-# Check ALB DNS name
-aws cloudformation describe-stacks \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-ecs-infra" \
-  --region "${AWS_REGION}" \
-  --query "Stacks[0].Outputs[?OutputKey=='AlbDnsName'].OutputValue" \
-  --output text
-
-# List ECR images
-aws ecr describe-images \
-  --repository-name "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-repo" \
-  --region "${AWS_REGION}" \
-  --query 'sort_by(imageDetails,& imagePushedAt)[*].[imageTags[0],imagePushedAt]' \
-  --output table
-
-# List task definition revisions
-aws ecs list-task-definitions \
-  --family-prefix "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-task" \
-  --region "${AWS_REGION}" \
-  --sort DESC
-
-# Rollback to a specific task definition revision
-aws ecs update-service \
-  --cluster "${ENVIRONMENT}-${PRODUCT_NAME}-cluster" \
-  --service "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-service" \
-  --task-definition "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-task:5" \
-  --force-new-deployment \
-  --region "${AWS_REGION}"
-
-# Update stack with new DesiredCount (CloudFormation way)
-aws cloudformation update-stack \
-  --stack-name "${ENVIRONMENT}-${PRODUCT_NAME}-${APP_SERVICE_NAME}-ecs-service" \
-  --use-previous-template \
-  --parameters \
-    ParameterKey=ProductName,UsePreviousValue=true \
-    ParameterKey=Environment,UsePreviousValue=true \
-    ParameterKey=AppServiceName,UsePreviousValue=true \
-    ParameterKey=ContainerPort,UsePreviousValue=true \
-    ParameterKey=HealthCheckPath,UsePreviousValue=true \
-    ParameterKey=ListenerRulePriority,UsePreviousValue=true \
-    ParameterKey=TaskCpu,UsePreviousValue=true \
-    ParameterKey=TaskMemory,UsePreviousValue=true \
-    ParameterKey=LogRetentionDays,UsePreviousValue=true \
-    ParameterKey=DesiredCount,ParameterValue=3 \
-  --region "${AWS_REGION}"
-```
-
----
+Details: [references/operations.md](references/operations.md). Read it when operating, debugging, or scaling a running environment.
 
 ## Conventions & Patterns
 

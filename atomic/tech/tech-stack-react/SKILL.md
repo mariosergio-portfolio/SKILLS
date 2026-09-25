@@ -1,12 +1,12 @@
 ---
 name: tech-stack-react
-description: Use when the user invokes %tech-stack-react or asks about building a React front-end — TypeScript, Vite, React Router, Zustand, TanStack Query, React Hook Form, Zod, Axios, Recharts/Chart.js, Vitest, React Testing Library, Playwright, Tailwind CSS, and project structure conventions.
+description: Use when the user invokes /tech-stack-react or asks about building a React front-end — TypeScript, Vite, React Router, Zustand, TanStack Query, React Hook Form, Zod, Axios, Recharts/Chart.js, Vitest, React Testing Library, Playwright, Tailwind CSS, and project structure conventions.
 ---
 
 # React Front-End Stack
 
 ## When to use this skill
-Activate when the user types `%tech-stack-react` or asks about the React technology stack — tooling, project structure, conventions, and testing strategy.
+Activate when the user types `/tech-stack-react` or asks about the React technology stack — tooling, project structure, conventions, and testing strategy.
 
 ---
 

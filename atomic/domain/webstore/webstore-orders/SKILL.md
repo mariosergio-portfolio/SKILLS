@@ -1,15 +1,17 @@
 ---
 name: webstore-orders
-description: Use when the user invokes %webstore-orders or asks about the web store orders module — order lifecycle, status transitions, order history, cancellation, and admin order management.
+description: Use when the user invokes /webstore-orders or asks about the web store orders module — order lifecycle, status transitions, order history, cancellation, and admin order management.
 ---
 
 # Web Store — Orders Module
 
 ## When to use this skill
-Activate when the user types `%webstore-orders` or asks about order lifecycle, status transitions, customer order history, order cancellation, or admin order management.
+Activate when the user types `/webstore-orders` or asks about order lifecycle, status transitions, customer order history, order cancellation, or admin order management.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — Order, OrderItem entity definitions and status machine rules
+- `webstore-domain` — Order, OrderItem entity definitions and status machine rules
 
 ---
 
@@ -100,7 +102,7 @@ PENDING ──► PAID ──► PROCESSING ──► SHIPPED ──► DELIVERE
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` for Order entity definitions and status machine rules.
+1. Load `webstore-domain` for Order entity definitions and status machine rules.
 2. Always validate status transitions against the state machine — never allow direct field assignment.
 3. Enforce immutability: only status and tracking fields change after placement.
 4. Apply cancellation rules strictly — stock restoration must accompany every cancellation.

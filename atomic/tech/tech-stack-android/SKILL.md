@@ -1,12 +1,12 @@
 ---
 name: tech-stack-android
-description: Use when the user invokes %tech-stack-android or asks about building an Android app with Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines, and WorkManager.
+description: Use when the user invokes /tech-stack-android or asks about building an Android app with Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines, and WorkManager.
 ---
 
 # Android Stack — Kotlin + Compose + Clean Architecture + MVVM
 
 ## When to use this skill
-Activate when the user types `%tech-stack-android` or needs guidance on the Android technology stack: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt DI, Room, Retrofit, Coroutines/Flow, and WorkManager.
+Activate when the user types `/tech-stack-android` or needs guidance on the Android technology stack: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt DI, Room, Retrofit, Coroutines/Flow, and WorkManager.
 
 ---
 

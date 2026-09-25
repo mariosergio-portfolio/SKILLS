@@ -1,15 +1,17 @@
 ---
 name: webstore-inventory
-description: Use when the user invokes %webstore-inventory or asks about the web store inventory module — stock levels, stock deduction, reservation, restocking, low-stock alerts, and admin inventory adjustments.
+description: Use when the user invokes /webstore-inventory or asks about the web store inventory module — stock levels, stock deduction, reservation, restocking, low-stock alerts, and admin inventory adjustments.
 ---
 
 # Web Store — Inventory Module
 
 ## When to use this skill
-Activate when the user types `%webstore-inventory` or asks about stock management: checking levels, deducting stock at checkout, reserving stock, restoring stock on cancellation, low-stock alerts, or admin inventory adjustments.
+Activate when the user types `/webstore-inventory` or asks about stock management: checking levels, deducting stock at checkout, reserving stock, restoring stock on cancellation, low-stock alerts, or admin inventory adjustments.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — Product entity, `StockReduced`, `StockRestored`, `StockBelowThreshold` domain events
+- `webstore-domain` — Product entity, `StockReduced`, `StockRestored`, `StockBelowThreshold` domain events
 
 ---
 
@@ -88,7 +90,7 @@ Activate when the user types `%webstore-inventory` or asks about stock managemen
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` for Product entity and stock-related domain events.
+1. Load `webstore-domain` for Product entity and stock-related domain events.
 2. Always use optimistic locking for `DeductStock` — never issue a plain update without version check.
 3. Record every stock change in the audit log.
 4. Use the reservation pattern only when checkout abandonment rate is high enough to justify the complexity.

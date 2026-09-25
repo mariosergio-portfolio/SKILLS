@@ -1,15 +1,17 @@
 ---
 name: webstore-catalog
-description: Use when the user invokes %webstore-catalog or asks about the web store catalog module — product listing, search, filtering, product detail, categories, and backoffice product management.
+description: Use when the user invokes /webstore-catalog or asks about the web store catalog module — product listing, search, filtering, product detail, categories, and backoffice product management.
 ---
 
 # Web Store — Catalog Module
 
 ## When to use this skill
-Activate when the user types `%webstore-catalog` or asks about product listing, search, filtering, product detail pages (PDP), category management, or admin product CRUD.
+Activate when the user types `/webstore-catalog` or asks about product listing, search, filtering, product detail pages (PDP), category management, or admin product CRUD.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — entity definitions and business rules for Product and Category
+- `webstore-domain` — entity definitions and business rules for Product and Category
 
 ---
 
@@ -79,7 +81,7 @@ Activate when the user types `%webstore-catalog` or asks about product listing, 
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` for entity and rule definitions.
+1. Load `webstore-domain` for entity and rule definitions.
 2. Use the use cases list to name application services and input ports.
 3. Follow the REST endpoints table when implementing or reviewing controllers.
 4. Apply filtering, pagination, and visibility rules to every query.

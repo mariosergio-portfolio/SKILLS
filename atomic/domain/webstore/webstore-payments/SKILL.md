@@ -1,15 +1,17 @@
 ---
 name: webstore-payments
-description: Use when the user invokes %webstore-payments or asks about the web store payments module — initiating payments, handling gateway webhooks, idempotency, refunds, and Stripe/PayPal/Mercado Pago integration.
+description: Use when the user invokes /webstore-payments or asks about the web store payments module — initiating payments, handling gateway webhooks, idempotency, refunds, and Stripe/PayPal/Mercado Pago integration.
 ---
 
 # Web Store — Payments Module
 
 ## When to use this skill
-Activate when the user types `%webstore-payments` or asks about payment initiation, gateway webhooks, idempotency keys, refunds, or integrating Stripe, PayPal, or Mercado Pago.
+Activate when the user types `/webstore-payments` or asks about payment initiation, gateway webhooks, idempotency keys, refunds, or integrating Stripe, PayPal, or Mercado Pago.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — Payment entity definitions and status rules
+- `webstore-domain` — Payment entity definitions and status rules
 
 ---
 
@@ -102,7 +104,7 @@ PENDING ──► SUCCEEDED ──► REFUNDED
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` for the Payment entity and status definitions.
+1. Load `webstore-domain` for the Payment entity and status definitions.
 2. Always implement webhook handlers as idempotent operations.
 3. Use the gateway-specific integration notes for the correct API calls and webhook event names.
 4. Enforce all security rules — never store sensitive card data.

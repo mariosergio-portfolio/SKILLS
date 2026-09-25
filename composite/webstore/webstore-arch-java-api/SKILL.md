@@ -1,27 +1,29 @@
 ---
 name: webstore-arch-java-api
-description: Use when the user invokes %webstore-arch-java-api or asks about implementing the web store in Java — project structure, domain entities, port/adapter naming, REST endpoints, and configuration for the e-commerce REST API.
+description: Use when the user invokes /webstore-arch-java-api or asks about implementing the web store in Java — project structure, domain entities, port/adapter naming, REST endpoints, and configuration for the e-commerce REST API.
 ---
 
 # Web Store — Java API Implementation
 
 ## When to use this skill
-Activate when the user types `%webstore-arch-java-api` or asks about implementing the web store back-end in Java.
+Activate when the user types `/webstore-arch-java-api` or asks about implementing the web store back-end in Java.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load these foundation skills first:**
-- `%tech-arch-hexagonal` — hexagonal architecture, three rings, ports, adapters, dependency rules, folder layout
-- `%tech-good-practices` — SOLID principles, clean code, API design, testing strategy
-- `%tech-stack-java-spring-rest` — Java 25 + Spring Boot 4.1.x stack, Maven, OpenAPI, H2, MapStruct
+- `tech-arch-hexagonal` — hexagonal architecture, three rings, ports, adapters, dependency rules, folder layout
+- `tech-good-practices` — SOLID principles, clean code, API design, testing strategy
+- `tech-stack-java-spring-rest` — Java 25 + Spring Boot 4.1.x stack, Maven, OpenAPI, H2, MapStruct
 
 **Load these web store domain skills for the module being implemented:**
-- `%webstore-domain` — all entities, business rules, and module responsibilities
-- `%webstore-catalog` — Module: products and categories
-- `%webstore-cart` — Module: cart lifecycle and coupon logic
-- `%webstore-checkout` — Module: order placement and price freeze
-- `%webstore-orders` — Module: order lifecycle and status transitions
-- `%webstore-payments` — Module: gateway integration and webhooks
-- `%webstore-inventory` — Module: stock management and audit log
-- `%webstore-backoffice` — Module: admin product/order/inventory/customer/coupon management and reports
+- `webstore-domain` — all entities, business rules, and module responsibilities
+- `webstore-catalog` — Module: products and categories
+- `webstore-cart` — Module: cart lifecycle and coupon logic
+- `webstore-checkout` — Module: order placement and price freeze
+- `webstore-orders` — Module: order lifecycle and status transitions
+- `webstore-payments` — Module: gateway integration and webhooks
+- `webstore-inventory` — Module: stock management and audit log
+- `webstore-backoffice` — Module: admin product/order/inventory/customer/coupon management and reports
 
 ---
 
@@ -241,18 +243,18 @@ spring:
 ```
 
 > Activate dev profile with `--spring.profiles.active=dev`. H2 console at `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:webstoredb`, user: `sa`, no password).
-> For Maven deps, `SecurityConfig`, and `H2ConsoleConfig` see `%tech-stack-java-spring-rest`.
+> For Maven deps, `SecurityConfig`, and `H2ConsoleConfig` see `tech-stack-java-spring-rest`.
 > In dev, Cart may use an in-memory map instead of Redis; inject a `CartRepository` that switches implementation by profile.
 
 ---
 
 ## How to use this skill
-1. Load `%tech-arch-hexagonal`, `%tech-good-practices`, and `%tech-stack-java-spring-rest` for the full technical foundation.
+1. Load `tech-arch-hexagonal`, `tech-good-practices`, and `tech-stack-java-spring-rest` for the full technical foundation.
 2. Load the relevant web store domain skills for the module being implemented.
 3. Apply the project structure and naming conventions defined here to all web store Java implementation work.
 4. Use `PaymentGatewayPort` to keep gateway-specific code isolated in `infrastructure/gateway/`.
-5. Refer to `%webstore-data-structure` for the relational schema, DDL, and migration reference.
-6. Refer to `%webstore-inventory` for optimistic locking patterns on stock deduction.
-6. Use `%webstore-checkout` for the `PlaceOrder` transaction boundaries.
+5. Refer to `webstore-data-structure` for the relational schema, DDL, and migration reference.
+6. Refer to `webstore-inventory` for optimistic locking patterns on stock deduction.
+6. Use `webstore-checkout` for the `PlaceOrder` transaction boundaries.
 7. Respond and assist in English unless the user requests another language.
 8. Await further instructions from the user and execute them accordingly.

@@ -1,16 +1,18 @@
 ---
 name: webstore-checkout
-description: Use when the user invokes %webstore-checkout or asks about the web store checkout flow — order placement, stock deduction, price freezing, cart clearing, and the transition from cart to order.
+description: Use when the user invokes /webstore-checkout or asks about the web store checkout flow — order placement, stock deduction, price freezing, cart clearing, and the transition from cart to order.
 ---
 
 # Web Store — Checkout Module
 
 ## When to use this skill
-Activate when the user types `%webstore-checkout` or asks about the checkout process: placing an order, deducting stock, freezing prices, clearing the cart, or the atomic transaction that creates an order.
+Activate when the user types `/webstore-checkout` or asks about the checkout process: placing an order, deducting stock, freezing prices, clearing the cart, or the atomic transaction that creates an order.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — Order, OrderItem, Cart, CartItem entity definitions and rules
-- `%webstore-cart` — cart validation and price refresh rules
+- `webstore-domain` — Order, OrderItem, Cart, CartItem entity definitions and rules
+- `webstore-cart` — cart validation and price refresh rules
 
 ---
 
@@ -112,7 +114,7 @@ total           = subtotal - discountAmount + shippingCost
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` and `%webstore-cart` before implementing checkout logic.
+1. Load `webstore-domain` and `webstore-cart` before implementing checkout logic.
 2. Treat `PlaceOrder` as a single atomic use case — never split stock deduction and order creation across separate transactions.
 3. Follow the price freeze rules strictly — `OrderItem.unitPrice` must never be recalculated after placement.
 4. Use the error scenarios table to implement consistent error responses.

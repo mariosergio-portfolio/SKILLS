@@ -1,12 +1,12 @@
 ---
 name: webstore-domain
-description: Use when the user invokes %webstore-domain or asks about the web store domain model — core entities, business rules, value objects, and module responsibilities.
+description: Use when the user invokes /webstore-domain or asks about the web store domain model — core entities, business rules, value objects, and module responsibilities.
 ---
 
 # Web Store — Domain Specification
 
 ## When to use this skill
-Activate when the user types `%webstore-domain` or asks about the business model, entities, or rules of the web store system.
+Activate when the user types `/webstore-domain` or asks about the business model, entities, or rules of the web store system.
 
 ## Domain Overview
 The web store manages the full lifecycle of an e-commerce operation: catalog browsing, cart management, checkout, order fulfillment, payments, and inventory. All domain knowledge is technology-agnostic.
@@ -116,13 +116,13 @@ The web store manages the full lifecycle of an e-commerce operation: catalog bro
 
 | Module | Skill | Responsibility |
 |---|---|---|
-| Catalog | `%webstore-catalog` | Manage products and categories; expose search and detail endpoints |
-| Cart | `%webstore-cart` | Manage cart lifecycle, item operations, coupon application, price refresh |
-| Checkout | `%webstore-checkout` | Orchestrate order placement: stock deduction, price freeze, cart clearance |
-| Orders | `%webstore-orders` | Manage order lifecycle and status transitions |
-| Payments | `%webstore-payments` | Initiate payment, handle gateway webhooks, update order status |
-| Inventory | `%webstore-inventory` | Track and adjust stock levels; emit low-stock events |
-| Backoffice | `%webstore-backoffice` | Admin operations: product CRUD, order management, inventory adjustments, reports |
+| Catalog | `webstore-catalog` | Manage products and categories; expose search and detail endpoints |
+| Cart | `webstore-cart` | Manage cart lifecycle, item operations, coupon application, price refresh |
+| Checkout | `webstore-checkout` | Orchestrate order placement: stock deduction, price freeze, cart clearance |
+| Orders | `webstore-orders` | Manage order lifecycle and status transitions |
+| Payments | `webstore-payments` | Initiate payment, handle gateway webhooks, update order status |
+| Inventory | `webstore-inventory` | Track and adjust stock levels; emit low-stock events |
+| Backoffice | `webstore-backoffice` | Admin operations: product CRUD, order management, inventory adjustments, reports |
 
 ---
 

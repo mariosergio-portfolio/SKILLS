@@ -1,12 +1,12 @@
 ---
 name: tech-database-postgres
-description: Use when the user invokes %tech-database-postgres or asks about PostgreSQL relational database DDL design — good practices, naming conventions, data types, constraints, indexes, partitioning, sequences, ENUM types, triggers, and PostgreSQL-specific features for schema definition.
+description: Use when the user invokes /tech-database-postgres or asks about PostgreSQL relational database DDL design — good practices, naming conventions, data types, constraints, indexes, partitioning, sequences, ENUM types, triggers, and PostgreSQL-specific features for schema definition.
 ---
 
 # PostgreSQL — DDL Good Practices & Design Reference
 
 ## When to use this skill
-Activate when the user types `%tech-database-postgres` or asks about designing or reviewing a PostgreSQL database schema, writing DDL scripts, choosing the right data types, defining constraints, or leveraging PostgreSQL-specific features.
+Activate when the user types `/tech-database-postgres` or asks about designing or reviewing a PostgreSQL database schema, writing DDL scripts, choosing the right data types, defining constraints, or leveraging PostgreSQL-specific features.
 
 ---
 

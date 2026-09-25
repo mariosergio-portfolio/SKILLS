@@ -1,12 +1,12 @@
 ---
 name: webstore-data-structure
-description: Use when the user invokes %webstore-data-structure or asks about the web store relational data structure — tables, columns, types, primary keys, foreign keys, constraints, and usage rules. Technology-agnostic logical schema.
+description: Use when the user invokes /webstore-data-structure or asks about the web store relational data structure — tables, columns, types, primary keys, foreign keys, constraints, and usage rules. Technology-agnostic logical schema.
 ---
 
 # Web Store — Relational Database Schema
 
 ## When to use this skill
-Activate when the user types `%webstore-data-structure` or asks about the web store database structure, table definitions, column names, logical types, or relational constraints. This skill is **technology-agnostic** — it describes the logical schema only, not any specific database engine.
+Activate when the user types `/webstore-data-structure` or asks about the web store database structure, table definitions, column names, logical types, or relational constraints. This skill is **technology-agnostic** — it describes the logical schema only, not any specific database engine.
 
 ---
 
@@ -274,7 +274,7 @@ inventory_audit_log ──► product
 
 ## How to use this skill
 1. Use this schema as the canonical logical reference for database design, migrations, and ORM entity mapping.
-2. Map logical types to concrete database types using the technology-specific DDL skill (`%webstore-database-postgres`, `%tech-database-oracle`, etc.).
-3. Refer to `%webstore-domain` for the business meaning of each entity, domain events, and value objects.
+2. Map logical types to concrete database types using the technology-specific DDL skill (`webstore-database-postgres`, `tech-database-oracle`, etc.).
+3. Refer to `webstore-domain` for the business meaning of each entity, domain events, and value objects.
 4. Respond and assist in English unless the user requests another language.
 5. Await further instructions from the user and execute them accordingly.

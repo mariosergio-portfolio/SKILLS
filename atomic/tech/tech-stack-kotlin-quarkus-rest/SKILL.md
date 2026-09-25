@@ -1,12 +1,12 @@
 ---
 name: tech-stack-kotlin-quarkus-rest
-description: Use when the user invokes %tech-stack-kotlin-quarkus-rest or asks about building a Kotlin 2.4 + Quarkus 3.38 REST API — technology stack, Gradle dependencies, configuration, OpenAPI/Swagger, H2 dev setup, MapStruct, Panache/JPA conventions, and Quarkus patterns.
+description: Use when the user invokes /tech-stack-kotlin-quarkus-rest or asks about building a Kotlin 2.4 + Quarkus 3.38 REST API — technology stack, Gradle dependencies, configuration, OpenAPI/Swagger, H2 dev setup, MapStruct, Panache/JPA conventions, and Quarkus patterns.
 ---
 
 # Kotlin + Quarkus REST API
 
 ## When to use this skill
-Activate when the user types `%tech-stack-kotlin-quarkus-rest` or needs general guidance for a Kotlin 2.4 + Quarkus 3.38 REST API — stack versions, Gradle setup, configuration, OpenAPI, H2 dev profile, MapStruct, Panache/JPA, and Quarkus conventions.
+Activate when the user types `/tech-stack-kotlin-quarkus-rest` or needs general guidance for a Kotlin 2.4 + Quarkus 3.38 REST API — stack versions, Gradle setup, configuration, OpenAPI, H2 dev profile, MapStruct, Panache/JPA, and Quarkus conventions.
 
 ---
 

@@ -1,16 +1,18 @@
 ---
 name: webstore-database-postgres
-description: Use when the user invokes %webstore-database-postgres or asks about the web store database implemented in PostgreSQL — concrete column types, DDL scripts, indexes, constraints, triggers, and Flyway migration structure for the e-commerce system.
+description: Use when the user invokes /webstore-database-postgres or asks about the web store database implemented in PostgreSQL — concrete column types, DDL scripts, indexes, constraints, triggers, and Flyway migration structure for the e-commerce system.
 ---
 
 # Web Store — PostgreSQL Schema Implementation
 
 ## When to use this skill
-Activate when the user types `%webstore-database-postgres` or asks about the web store database in PostgreSQL: concrete DDL, column type choices, indexes, triggers, or Flyway migration layout.
+Activate when the user types `/webstore-database-postgres` or asks about the web store database in PostgreSQL: concrete DDL, column type choices, indexes, triggers, or Flyway migration layout.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Foundation skills this composite wires together:**
-- `%webstore-data-structure` — canonical logical schema: tables, columns, business rules, usage rules
-- `%tech-database-postgres` — PostgreSQL DDL conventions: naming, types, constraints, indexes, triggers, partitioning
+- `webstore-data-structure` — canonical logical schema: tables, columns, business rules, usage rules
+- `tech-database-postgres` — PostgreSQL DDL conventions: naming, types, constraints, indexes, triggers, partitioning
 
 ---
 
@@ -455,8 +457,8 @@ src/main/resources/db/migration/
 ---
 
 ## How to use this skill
-1. Use `%webstore-data-structure` for the technology-agnostic schema, column definitions, and business rules.
-2. Use `%tech-database-postgres` for broader PostgreSQL DDL conventions (partitioning, ENUM types, RLS, full-text search) beyond what is covered here.
+1. Use `webstore-data-structure` for the technology-agnostic schema, column definitions, and business rules.
+2. Use `tech-database-postgres` for broader PostgreSQL DDL conventions (partitioning, ENUM types, RLS, full-text search) beyond what is covered here.
 3. Apply the DDL scripts above as Flyway migrations — one file per table, in dependency order.
 4. Respond and assist in English unless the user requests another language.
 5. Await further instructions from the user and execute them accordingly.

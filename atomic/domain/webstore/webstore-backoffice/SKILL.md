@@ -1,21 +1,23 @@
 ---
 name: webstore-backoffice
-description: Use when the user invokes %webstore-backoffice or asks about the web store backoffice module — admin product management, order management, inventory adjustments, customer management, coupon management, and reporting.
+description: Use when the user invokes /webstore-backoffice or asks about the web store backoffice module — admin product management, order management, inventory adjustments, customer management, coupon management, and reporting.
 ---
 
 # Web Store — Backoffice Module
 
 ## When to use this skill
-Activate when the user types `%webstore-backoffice` or asks about admin-facing operations: managing products, categories, orders, inventory, customers, coupons, or generating reports.
+Activate when the user types `/webstore-backoffice` or asks about admin-facing operations: managing products, categories, orders, inventory, customers, coupons, or generating reports.
+
+> Skills referenced by name below are sibling skills in this library. Load each one with the Skill tool (or `/<skill-name>`) before continuing; do not guess their content.
 
 **Always load first:**
-- `%webstore-domain` — entity definitions and business rules
+- `webstore-domain` — entity definitions and business rules
 
 **Load relevant module skills for the area being worked on:**
-- `%webstore-catalog` — product and category admin rules
-- `%webstore-orders` — order status transitions and cancellation rules
-- `%webstore-inventory` — stock adjustment and audit log rules
-- `%webstore-payments` — refund initiation rules
+- `webstore-catalog` — product and category admin rules
+- `webstore-orders` — order status transitions and cancellation rules
+- `webstore-inventory` — stock adjustment and audit log rules
+- `webstore-payments` — refund initiation rules
 
 ---
 
@@ -164,7 +166,7 @@ Activate when the user types `%webstore-backoffice` or asks about admin-facing o
 ---
 
 ## How to use this skill
-1. Load `%webstore-domain` for entity and rule definitions.
+1. Load `webstore-domain` for entity and rule definitions.
 2. Load the relevant module skills when implementing a specific backoffice area (catalog, orders, inventory, payments).
 3. Always enforce `ROLE_ADMIN` on all `/api/admin/**` routes.
 4. Use the use cases list to name application services and input ports.

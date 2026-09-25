@@ -1,12 +1,12 @@
 ---
 name: tech-database-oracle
-description: Use when the user invokes %tech-database-oracle or asks about Oracle Database DDL design — good practices, naming conventions, data types, constraints, indexes, partitioning, sequences, triggers, and Oracle-specific features for schema definition.
+description: Use when the user invokes /tech-database-oracle or asks about Oracle Database DDL design — good practices, naming conventions, data types, constraints, indexes, partitioning, sequences, triggers, and Oracle-specific features for schema definition.
 ---
 
 # Oracle Database — DDL Good Practices & Design Reference
 
 ## When to use this skill
-Activate when the user types `%tech-database-oracle` or asks about designing or reviewing an Oracle database schema, writing DDL scripts, choosing the right data types, defining constraints, or leveraging Oracle-specific features.
+Activate when the user types `/tech-database-oracle` or asks about designing or reviewing an Oracle database schema, writing DDL scripts, choosing the right data types, defining constraints, or leveraging Oracle-specific features.
 
 ---
 

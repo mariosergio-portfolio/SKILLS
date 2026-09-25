@@ -1,12 +1,12 @@
 ---
 name: tech-stack-dotnet
-description: Use when the user invokes %tech-stack-dotnet or asks about building a .NET REST API with C# 14, ASP.NET Core 10, Entity Framework Core 10, FluentValidation, xUnit v3, and Testcontainers.
+description: Use when the user invokes /tech-stack-dotnet or asks about building a .NET REST API with C# 14, ASP.NET Core 10, Entity Framework Core 10, FluentValidation, xUnit v3, and Testcontainers.
 ---
 
 # .NET 10 + ASP.NET Core + EF Core REST API
 
 ## When to use this skill
-Activate when the user types `%tech-stack-dotnet` or needs guidance on the .NET technology stack for a REST API. 
+Activate when the user types `/tech-stack-dotnet` or needs guidance on the .NET technology stack for a REST API. 
 
 ---
 

@@ -1,12 +1,12 @@
 ---
 name: tech-stack-java-spa
-description: Use when the user invokes %tech-stack-java-spa or asks about building a server-side Java SPA with Vaadin — technology stack, Maven dependencies, configuration, security setup, and Karibu-Testing conventions.
+description: Use when the user invokes /tech-stack-java-spa or asks about building a server-side Java SPA with Vaadin — technology stack, Maven dependencies, configuration, security setup, and Karibu-Testing conventions.
 ---
 
 # Java 25 + Spring Boot + Vaadin SPA
 
 ## When to use this skill
-Activate when the user types `%tech-stack-java-spa` or needs guidance on the Vaadin server-side SPA stack built on top of Spring Boot.
+Activate when the user types `/tech-stack-java-spa` or needs guidance on the Vaadin server-side SPA stack built on top of Spring Boot.
 
 ---
 
