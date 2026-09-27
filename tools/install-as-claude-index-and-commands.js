@@ -4,10 +4,10 @@
 // Claude Code does not expand variables in CLAUDE.md or in command @-imports, so the
 // installed copies must contain the real path.
 //
-//   node tools/install-claude-setup.js                              -> ~/.claude, library = this repository
-//   node tools/install-claude-setup.js --skills-home D:/skills      -> ~/.claude, library = D:/skills
-//   node tools/install-claude-setup.js --target C:/my/project/.claude
-//   SKILLS_HOME=D:/skills node tools/install-claude-setup.js        (the flag wins over the variable)
+//   node tools/install-as-claude-index-and-commands.js                          -> ~/.claude, library = this repository
+//   node tools/install-as-claude-index-and-commands.js --skills-home D:/skills  -> ~/.claude, library = D:/skills
+//   node tools/install-as-claude-index-and-commands.js --target C:/my/project/.claude
+//   SKILLS_HOME=D:/skills node tools/install-as-claude-index-and-commands.js     (the flag wins over the variable)
 const fs = require('fs'), os = require('os'), path = require('path');
 
 const PLACEHOLDER = '{{SKILLS_HOME}}';
