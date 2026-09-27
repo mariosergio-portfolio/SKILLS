@@ -2,7 +2,7 @@
 // Validates every SKILL.md in this library against the Claude Agent Skills rules.
 // Usage: node tools/validate-skills.js   (exit code 1 on any error)
 const fs = require('fs'), path = require('path');
-const setup = require('./install-claude-setup.js');
+const setup = require('./install-as-claude-index-and-commands.js');
 
 const root = path.resolve(__dirname, '..');
 const MAX_BODY_LINES = 500;
@@ -129,10 +129,10 @@ if (fs.existsSync(indexFile)) {
   // Compared after filling in the placeholder, with the same library path the installer would use.
   const skillsHome = setup.resolveSkillsHome();
   const same = (a, b) => fs.existsSync(b) && setup.render(fs.readFileSync(a, 'utf8'), skillsHome) === fs.readFileSync(b, 'utf8');
-  if (fs.existsSync(path.join(home, 'CLAUDE.md')) && !same(indexFile, path.join(home, 'CLAUDE.md'))) warn(indexFile, `installed copy ${path.join(home, 'CLAUDE.md')} differs; run node tools/install-claude-setup.js`);
+  if (fs.existsSync(path.join(home, 'CLAUDE.md')) && !same(indexFile, path.join(home, 'CLAUDE.md'))) warn(indexFile, `installed copy ${path.join(home, 'CLAUDE.md')} differs; run node tools/install-as-claude-index-and-commands.js`);
   for (const c of cmds) {
     const installed = path.join(home, 'commands', c);
-    if (fs.existsSync(path.join(home, 'commands')) && !same(path.join(cmdDir, c), installed)) warn(path.join(cmdDir, c), `installed copy ${installed} is missing or differs; run node tools/install-claude-setup.js`);
+    if (fs.existsSync(path.join(home, 'commands')) && !same(path.join(cmdDir, c), installed)) warn(path.join(cmdDir, c), `installed copy ${installed} is missing or differs; run node tools/install-as-claude-index-and-commands.js`);
   }
 }
 

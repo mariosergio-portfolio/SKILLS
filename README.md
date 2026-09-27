@@ -212,11 +212,11 @@ skills/
 │   ├── tech/<skill>/SKILL.md [+ references/*.md, scripts/*]
 │   └── infra/<skill>/SKILL.md [+ references/*.md]
 ├── composite/webstore/<skill>/SKILL.md [+ references/*.md]
-├── evals/webstore-evals.json            behavioural test prompts + expectations
-├── tools/validate-skills.js             compliance checker
-├── tools/install-claude-setup.js        recommended setup: install claude-setup/ into ~/.claude
-├── claude-setup/                        CLAUDE.md index + commands (recommended setup)
-├── install-as-claude-skills.sh / .ps1   alternative setup: copy skills into a Claude skills folder
+├── evals/webstore-evals.json                        behavioural test prompts + expectations
+├── tools/validate-skills.js                         compliance checker
+├── tools/install-as-claude-index-and-commands.js    recommended setup: install claude-setup/ into ~/.claude
+├── claude-setup/                                    CLAUDE.md index + commands (recommended setup)
+├── tools/install-as-claude-skills.sh / .ps1         alternative setup: copy skills into a Claude skills folder
 └── README.md
 ```
 
@@ -238,7 +238,7 @@ With this setup, files can have any name and live in any folder. Nothing gets co
 **Install or update** (run again after editing anything in `claude-setup/`):
 
 ```bash
-node tools/install-claude-setup.js
+node tools/install-as-claude-index-and-commands.js
 ```
 
 The files in `claude-setup/` don't contain the library path. They use the placeholder `{{SKILLS_HOME}}`, and the installer replaces it with the real path while it copies `CLAUDE.md` to `~/.claude/CLAUDE.md` and the commands to `~/.claude/commands/`. (Claude Code doesn't expand variables in these files, so the installed copies must contain the real path.)
@@ -246,9 +246,9 @@ The files in `claude-setup/` don't contain the library path. They use the placeh
 By default the library path is where this repository is. To use another one, pass it as an argument or set the `SKILLS_HOME` environment variable (the argument wins):
 
 ```bash
-node tools/install-claude-setup.js --skills-home D:/work/skills
-SKILLS_HOME=D:/work/skills node tools/install-claude-setup.js
-node tools/install-claude-setup.js --target C:/my/project/.claude   # install for one project only
+node tools/install-as-claude-index-and-commands.js --skills-home D:/work/skills
+SKILLS_HOME=D:/work/skills node tools/install-as-claude-index-and-commands.js
+node tools/install-as-claude-index-and-commands.js --target C:/my/project/.claude   # install for one project only
 ```
 
 If you move the repository, run the installer again. The installer overwrites `~/.claude/CLAUDE.md`, so keep personal additions in the repo's `claude-setup/CLAUDE.md`.
@@ -275,16 +275,16 @@ Use it **instead of** the recommended setup, not together with it. Otherwise eve
 Claude only discovers skills one folder deep (`<skills-dir>/<skill-name>/SKILL.md`). The install scripts run the validator, then copy every skill flat into a skills folder:
 
 ```bash
-./install-as-claude-skills.sh                   # ~/.claude/skills (every project)
-./install-as-claude-skills.sh /path/to/project  # <project>/.claude/skills (one project, commit it to share)
+./tools/install-as-claude-skills.sh                   # ~/.claude/skills (every project)
+./tools/install-as-claude-skills.sh /path/to/project  # <project>/.claude/skills (one project, commit it to share)
 ```
 
 ```powershell
-.\install-as-claude-skills.ps1
-.\install-as-claude-skills.ps1 -Project C:\path\to\project
+.\tools\install-as-claude-skills.ps1
+.\tools\install-as-claude-skills.ps1 -Project C:\path\to\project
 ```
 
-If PowerShell says running scripts is disabled, run the script once with `powershell -ExecutionPolicy Bypass -File .\install-as-claude-skills.ps1`. To allow local scripts permanently for your user, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+If PowerShell says running scripts is disabled, run the script once with `powershell -ExecutionPolicy Bypass -File .\tools\install-as-claude-skills.ps1`. To allow local scripts permanently for your user, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 Run the install again after editing a skill. If you installed an older version, delete `infra-aws-ec2`, `infra-aws-fargate` and `webstore-database-postgres` from the target folder. The first two were merged into `infra-aws-ecs`, and the third was removed.
 

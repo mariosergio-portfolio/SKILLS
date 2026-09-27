@@ -2,12 +2,12 @@
 # Claude only discovers skills one level deep (<skills-dir>\<skill-name>\SKILL.md),
 # so the atomic\ and composite\ tree is flattened on install.
 #
-#   .\install-as-claude-skills.ps1                        -> ~\.claude\skills            (all your projects)
-#   .\install-as-claude-skills.ps1 -Project C:\my\project -> C:\my\project\.claude\skills
+#   .\tools\install-as-claude-skills.ps1                        -> ~\.claude\skills            (all your projects)
+#   .\tools\install-as-claude-skills.ps1 -Project C:\my\project -> C:\my\project\.claude\skills
 param([string]$Project)
 
 $ErrorActionPreference = 'Stop'
-$src = $PSScriptRoot
+$src = Split-Path -Parent $PSScriptRoot   # repository root (this script lives in tools\)
 if ($Project) { $dest = Join-Path $Project '.claude\skills' } else { $dest = Join-Path $HOME '.claude\skills' }
 
 node (Join-Path $src 'tools\validate-skills.js')

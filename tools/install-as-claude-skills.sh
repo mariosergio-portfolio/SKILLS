@@ -3,11 +3,11 @@
 # Claude only discovers skills one level deep (<skills-dir>/<skill-name>/SKILL.md),
 # so the atomic/ and composite/ tree is flattened on install.
 #
-#   ./install-as-claude-skills.sh                  -> ~/.claude/skills            (all your projects)
-#   ./install-as-claude-skills.sh /path/to/project -> /path/to/project/.claude/skills
+#   ./tools/install-as-claude-skills.sh                  -> ~/.claude/skills            (all your projects)
+#   ./tools/install-as-claude-skills.sh /path/to/project -> /path/to/project/.claude/skills
 set -euo pipefail
 
-src="$(cd "$(dirname "$0")" && pwd)"
+src="$(cd "$(dirname "$0")/.." && pwd)"   # repository root (this script lives in tools/)
 if [ $# -ge 1 ]; then dest="$1/.claude/skills"; else dest="$HOME/.claude/skills"; fi
 
 node "$src/tools/validate-skills.js"
