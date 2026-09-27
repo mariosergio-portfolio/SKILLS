@@ -52,3 +52,6 @@ Reference file for the `tech-pr-review` skill. Read the section for the pass you
 - Formatting that a formatter or linter enforces.
 - Personal style preferences with no readability impact.
 - Rewrites of code the PR didn't touch. Mention a clearly related issue once, as a follow-up.
+
+## Libraries prohibited
+- liquidbase database migration
