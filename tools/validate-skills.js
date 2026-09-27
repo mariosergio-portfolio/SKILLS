@@ -98,6 +98,40 @@ for (const { file, text } of skills.filter(s => s.file)) {
   }
 }
 
+// The CLAUDE.md index (claude-setup/) must list every skill, with the right name, and only existing paths.
+const setupDir = path.join(root, 'claude-setup');
+const indexFile = path.join(setupDir, 'CLAUDE.md');
+if (fs.existsSync(indexFile)) {
+  const index = fs.readFileSync(indexFile, 'utf8');
+  const base = (index.match(/\*\*`([^`]+)`\*\*/) || [])[1]; // library base path declared in CLAUDE.md
+  const toLocal = p => path.resolve(root, base && p.startsWith(base) ? p.slice(base.length) : p);
+  const indexed = new Map(); // path -> name
+  for (const [, name, p] of index.matchAll(/^\|[^|]*\|\s*`([a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|\s*$/gm)) {
+    indexed.set(path.resolve(root, p), name);
+    if (!fs.existsSync(path.resolve(root, p))) err(indexFile, `index row "${name}" points to missing file "${p}"`);
+    else if (path.basename(path.dirname(path.resolve(root, p))) !== name) err(indexFile, `index row "${name}" points to "${p}", which is a different skill`);
+  }
+  for (const { file } of skills.filter(s => s.file)) {
+    if (!indexed.has(path.resolve(file))) err(indexFile, `skill "${path.basename(path.dirname(file))}" is missing from the index`);
+  }
+  const cmdDir = path.join(setupDir, 'commands');
+  const cmds = fs.existsSync(cmdDir) ? fs.readdirSync(cmdDir).filter(f => f.endsWith('.md')) : [];
+  for (const c of cmds) {
+    const t = fs.readFileSync(path.join(cmdDir, c), 'utf8');
+    for (const [, p] of t.matchAll(/(?:^@|`)((?:[A-Za-z]:)?\/[^`\s]+\.(?:md|sh))/gm)) {
+      if (!fs.existsSync(toLocal(p))) err(path.join(cmdDir, c), `references missing file "${p}"`);
+    }
+  }
+  // Installed copies that drifted from claude-setup/
+  const home = path.join(require('os').homedir(), '.claude');
+  const same = (a, b) => fs.existsSync(b) && fs.readFileSync(a, 'utf8') === fs.readFileSync(b, 'utf8');
+  if (fs.existsSync(path.join(home, 'CLAUDE.md')) && !same(indexFile, path.join(home, 'CLAUDE.md'))) warn(indexFile, `installed copy ${path.join(home, 'CLAUDE.md')} differs; copy it again`);
+  for (const c of cmds) {
+    const installed = path.join(home, 'commands', c);
+    if (fs.existsSync(path.join(home, 'commands')) && !same(path.join(cmdDir, c), installed)) warn(path.join(cmdDir, c), `installed copy ${installed} is missing or differs; copy it again`);
+  }
+}
+
 for (const w of [...new Set(warnings)]) console.log(`warning  ${w}`);
 for (const e of errors) console.log(`error    ${e}`);
 console.log(`\n${names.size} skills checked: ${errors.length} error(s), ${new Set(warnings).size} warning(s)`);

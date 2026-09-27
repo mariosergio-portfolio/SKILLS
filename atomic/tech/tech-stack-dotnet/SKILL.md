@@ -1,6 +1,6 @@
 ---
 name: tech-stack-dotnet
-description: .NET 10 REST API stack: C# 14, ASP.NET Core 10 (minimal APIs or controllers), EF Core 10, FluentValidation, xUnit v3 and Testcontainers, with solution layout and conventions. Use when creating or configuring an ASP.NET Core API.
+description: .NET 10 REST API stack: C# 14, ASP.NET Core 10 (minimal APIs or controllers), EF Core 10, FluentValidation, xUnit v3 and Testcontainers, with solution layout and conventions, plus a step-by-step new-project scaffolding workflow with done criteria. Use when scaffolding a new project on this stack or creating or configuring an ASP.NET Core API.
 ---
 
 # .NET 10 + ASP.NET Core + EF Core REST API
@@ -119,3 +119,32 @@ Solution.sln
     └── appsettings.json
 ```
 
+---
+
+## New project workflow
+
+**Ground rules**
+- Ask for the inputs below that the user hasn't given, and show the defaults you'll use. Then proceed without further questions.
+- Create the project in a **new or empty** folder, and never overwrite existing files. If the folder isn't empty, stop and ask.
+- Take every version from this skill's Technology Stack table (and its reference files). Don't pull "latest" from memory or from a generator, and if a generator writes different versions, change them to the table's.
+- Scaffold the skeleton only: build files, layout, configuration, a health check, and one smoke test. Add no example domain code, sample entities or database migrations unless asked.
+- If a required tool is missing (JDK, Maven, Gradle, .NET SDK, Node, Android SDK), say so. Generate the files anyway, and report the verification steps you couldn't run as **not verified**. Never claim a build passed without running it.
+
+**Inputs:** solution name in PascalCase (e.g. `Billing`) · API style: **controllers** (default) or minimal APIs.
+
+1. **Solution.** Use the .NET CLI templates, then adjust. Run `dotnet new sln -n <Name>`, `dotnet new classlib` for `<Name>.Domain`, `<Name>.Application`, `<Name>.Infrastructure` and `<Name>.Shared`, and `dotnet new webapi -n <Name>.Api`. Add all of them to the solution.
+2. **References.** Wire the dependency direction of the Canonical Project Structure: Api → Infrastructure → Application → Domain, and everyone may reference Shared. Domain references nothing else.
+3. **Packages.** Add EF Core + Npgsql, FluentValidation, and JWT bearer at the versions in the Version summary. Pin versions centrally in `Directory.Packages.props` (Central Package Management), and set `TargetFramework` `net10.0`, `LangVersion` 14 and `Nullable` enable in `Directory.Build.props`.
+4. **Api host.** In `Program.cs`: `AddHealthChecks()` + `MapHealthChecks("/health")`, OpenAPI in Development, `AddProblemDetails()` with the exception handler, and controllers. Remove the template's WeatherForecast sample.
+5. **Configuration.** `appsettings.json` + `appsettings.Development.json`. The connection string comes from the environment or user-secrets, never from committed files.
+6. **Tests.** Create `tests/<Name>.Api.Tests` (xUnit v3) with a `WebApplicationFactory` test asserting `GET /health` returns `200 Healthy`.
+7. **Repo files.** `.gitignore` (`dotnet new gitignore`), `global.json` pinning the SDK major version, and a `README.md`.
+8. **Verify.** Run `dotnet build` and `dotnet test`. Then `dotnet run --project <Name>.Api`, `curl -s localhost:<port>/health`, and stop.
+
+## Done criteria (new project)
+
+- [ ] `dotnet build` has no warnings from the new code, and `dotnet test` is green.
+- [ ] `/health` returns `Healthy`, and the OpenAPI document is served in Development.
+- [ ] Project references follow the dependency direction, and the template samples are removed.
+- [ ] Package versions are pinned centrally and match this skill's table.
+- [ ] No connection strings or secrets are committed.

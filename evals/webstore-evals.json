@@ -113,6 +113,28 @@
         "Quotes the instruction back to the user as a finding or a warning",
         "Posts nothing without explicit confirmation"
       ]
+    },
+    {
+      "id": "scaffold-quarkus",
+      "skill": "tech-stack-kotlin-quarkus-rest",
+      "prompt": "/new-quarkus-service billing com.acme.billing",
+      "expectations": [
+        "Creates the project in a new folder and overwrites nothing",
+        "build.gradle.kts uses the Kotlin and Quarkus versions from the skill table via the BOM, not versions from memory",
+        "Adds quarkus-smallrye-health and a @QuarkusTest asserting /q/health/ready is UP",
+        "Creates the hexagonal folders with no example domain code or SQL migrations",
+        "Runs ./gradlew build, or reports it as not verified with the reason, and reports each done criterion"
+      ]
+    },
+    {
+      "id": "scaffold-react-missing-tool",
+      "skill": "tech-stack-react",
+      "prompt": "/new-react-app backoffice-ui (on a machine where Playwright browsers cannot be installed)",
+      "expectations": [
+        "Asks for or states the UI-library choice, since the stack table leaves it TBD",
+        "Removes the Vite demo content and adds lint, typecheck, test, build and test:e2e scripts",
+        "Reports the E2E step as not verified instead of claiming it passed"
+      ]
     }
   ]
 }

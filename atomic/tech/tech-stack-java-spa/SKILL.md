@@ -1,6 +1,6 @@
 ---
 name: tech-stack-java-spa
-description: Server-side Java single-page app stack: Java 25, Spring Boot and Vaadin 25 Flow, with Maven dependencies, Spring Security integration for views, and Karibu-Testing for UI tests. Use when building a Vaadin web UI.
+description: Server-side Java single-page app stack: Java 25, Spring Boot and Vaadin 25 Flow, with Maven dependencies, Spring Security integration for views, and Karibu-Testing for UI tests, plus a step-by-step new-project scaffolding workflow with done criteria. Use when scaffolding a new project on this stack or building a Vaadin web UI.
 ---
 
 # Java 25 + Spring Boot + Vaadin SPA
@@ -157,3 +157,32 @@ vaadin:
 - **Integration tests**: `@SpringBootTest` + Karibu-Testing with real Spring context and Testcontainers database.
 - **E2E tests**: Playwright or Selenium against a running instance for critical user flows.
 
+---
+
+## New project workflow
+
+**Ground rules**
+- Ask for the inputs below that the user hasn't given, and show the defaults you'll use. Then proceed without further questions.
+- Create the project in a **new or empty** folder, and never overwrite existing files. If the folder isn't empty, stop and ask.
+- Take every version from this skill's Technology Stack table (and its reference files). Don't pull "latest" from memory or from a generator, and if a generator writes different versions, change them to the table's.
+- Scaffold the skeleton only: build files, layout, configuration, a health check, and one smoke test. Add no example domain code, sample entities or database migrations unless asked.
+- If a required tool is missing (JDK, Maven, Gradle, .NET SDK, Node, Android SDK), say so. Generate the files anyway, and report the verification steps you couldn't run as **not verified**. Never claim a build passed without running it.
+
+This stack builds on `tech-stack-java-spring-rest`. Run that skill's New project workflow first, then apply the Vaadin additions below.
+
+**Inputs:** the same as `tech-stack-java-spring-rest` (name, package, Maven), plus whether Vaadin Charts is needed. Charts is a commercial add-on, so don't add it unless asked.
+
+1. **Base.** Follow steps 1–7 of the Spring REST workflow, but skip the REST-only parts: no Swagger UI unless the app also exposes an API.
+2. **Vaadin.** Add the Vaadin properties, the BOM in `<dependencyManagement>` and the dependencies from the Maven Dependencies section. Add the production build profile Vaadin needs for `./mvnw -Pproduction package`.
+3. **Security.** Replace the REST `SecurityConfig` with the Vaadin-aware one from the Security Configuration section, including a `LoginView` and the actuator health endpoint left public.
+4. **UI shell.** A `MainLayout` (`AppLayout`) and one `@Route("")` placeholder view marked `@PermitAll`, following the View naming and Routing conventions.
+5. **Configuration.** Add the Vaadin properties to `application.yml` as in the `application.yml` section.
+6. **Tests.** A Karibu-Testing test that navigates to the placeholder view and finds its heading, plus the Spring context/health smoke test.
+7. **Verify.** Run `./mvnw verify`, then start the app and check that `curl -s localhost:8080/actuator/health` returns `UP` and that `/` returns `200` (or redirects to the login page). Stop it.
+
+## Done criteria (new project)
+
+- [ ] `./mvnw verify` is green, and the Karibu test and smoke test ran.
+- [ ] The app starts, health is `UP`, and the root route renders or redirects to login.
+- [ ] Vaadin and Spring versions match the tables in this skill and `tech-stack-java-spring-rest`.
+- [ ] The production profile is configured. Charts is included only if it was asked for.

@@ -1,6 +1,6 @@
 ---
 name: tech-stack-kotlin-quarkus-rest
-description: Kotlin 2.4 + Quarkus 3.38 REST API stack: pinned versions, Gradle Kotlin DSL build, Panache/JPA, MapStruct, OpenAPI, SmallRye JWT, and %dev/%test/%prod configuration with H2 and PostgreSQL. Use when creating or configuring a Quarkus service in Kotlin.
+description: Kotlin 2.4 + Quarkus 3.38 REST API stack: pinned versions, Gradle Kotlin DSL build, Panache/JPA, MapStruct, OpenAPI, SmallRye JWT, and %dev/%test/%prod configuration with H2 and PostgreSQL, plus a step-by-step new-project scaffolding workflow with done criteria. Use when scaffolding a new project on this stack or creating or configuring a Quarkus service in Kotlin.
 ---
 
 # Kotlin + Quarkus REST API
@@ -337,3 +337,33 @@ mp.jwt.verify.issuer=https://my-issuer.example.com
 ## How to use this skill
 1. Apply these stack versions, Gradle setup, and Quarkus/Kotlin conventions for any Quarkus REST API project.
 2. Use Quarkus **3.38.0** for the latest features or **3.33.3** (LTS) for production stability — both pin Kotlin **2.4.0** via the BOM.
+
+---
+
+## New project workflow
+
+**Ground rules**
+- Ask for the inputs below that the user hasn't given, and show the defaults you'll use. Then proceed without further questions.
+- Create the project in a **new or empty** folder, and never overwrite existing files. If the folder isn't empty, stop and ask.
+- Take every version from this skill's Technology Stack table (and its reference files). Don't pull "latest" from memory or from a generator, and if a generator writes different versions, change them to the table's.
+- Scaffold the skeleton only: build files, layout, configuration, a health check, and one smoke test. Add no example domain code, sample entities or database migrations unless asked.
+- If a required tool is missing (JDK, Maven, Gradle, .NET SDK, Node, Android SDK), say so. Generate the files anyway, and report the verification steps you couldn't run as **not verified**. Never claim a build passed without running it.
+
+**Inputs:** service name (e.g. `billing`) · group/package (default `com.mycompany.<name>`) · Quarkus line: **latest** (`3.38.0`) or **LTS** (`3.33.3`), default latest.
+
+1. **Build.** Write `settings.gradle.kts`, `gradle.properties` and `build.gradle.kts` exactly as in the Gradle Dependencies section of this skill (plugins, BOM, dependencies, Kotlin/kapt options). Add `io.quarkus:quarkus-smallrye-health` for health. Generate the Gradle wrapper (`gradle wrapper`) so `./gradlew` works without a global Gradle.
+2. **Layout.** Create `src/main/kotlin/<package>/` with the hexagonal folders from `tech-arch-hexagonal`, keeping empty folders with `.gitkeep`.
+3. **Configuration.** Write `src/main/resources/application.properties` with the base, `%dev` (H2), `%test` and `%prod` (PostgreSQL from env vars) sections, as in the Configuration File Format section. Health is served at `/q/health`.
+4. **Cross-cutting.** Add `OpenApiConfig.kt` and a global exception mapper returning RFC 9457 problem details. Leave the JWT settings in place but commented until keys exist.
+5. **Smoke test.** A `@QuarkusTest` asserting `GET /q/health/ready` returns `200` with status `UP`.
+6. **Repo files.** `.gitignore` (build/, .gradle/, IDE files, `.env`), and a `README.md` with build, `./gradlew quarkusDev`, and the Swagger UI URL (`/q/swagger-ui`).
+7. **Verify.** Run `./gradlew build`. Then start `./gradlew quarkusDev` in the background, check `curl -s localhost:8080/q/health` and the Swagger UI status code, then stop it.
+
+## Done criteria (new project)
+
+- [ ] `./gradlew build` is green, and the smoke test ran.
+- [ ] Dev mode starts, `/q/health` reports `UP`, and `/q/swagger-ui` returns `200`.
+- [ ] Kotlin and Quarkus versions match the chosen line in this skill's table, managed through the BOM.
+- [ ] The hexagonal folders exist, with no example domain code.
+- [ ] No secrets in the repo: `%prod` reads everything sensitive from environment variables.
+- [ ] If this service will run on `infra-aws-ecs`, the README notes that `HealthCheckPath` must be `/q/health/ready` (the template default is `/actuator/health`).

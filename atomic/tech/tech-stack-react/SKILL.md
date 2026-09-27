@@ -1,6 +1,6 @@
 ---
 name: tech-stack-react
-description: React 19 + TypeScript + Vite front-end stack: React Router, Zustand, TanStack Query, React Hook Form + Zod, Axios, Tailwind, Vitest, React Testing Library and Playwright, with project-structure conventions. Use when creating or structuring a React application.
+description: React 19 + TypeScript + Vite front-end stack: React Router, Zustand, TanStack Query, React Hook Form + Zod, Axios, Tailwind, Vitest, React Testing Library and Playwright, with project-structure conventions, plus a step-by-step new-project scaffolding workflow with done criteria. Use when scaffolding a new project on this stack or creating or structuring a React application.
 ---
 
 # React Front-End Stack
@@ -338,3 +338,31 @@ With Tailwind v4 the configuration lives in CSS, not in a JS file:
 - **Component tests (React Testing Library)**: render components with mocked queries/stores; assert on visible output.
 - **E2E tests (Playwright)**: cover critical user flows end to end.
 
+---
+
+## New project workflow
+
+**Ground rules**
+- Ask for the inputs below that the user hasn't given, and show the defaults you'll use. Then proceed without further questions.
+- Create the project in a **new or empty** folder, and never overwrite existing files. If the folder isn't empty, stop and ask.
+- Take every version from this skill's Technology Stack table (and its reference files). Don't pull "latest" from memory or from a generator, and if a generator writes different versions, change them to the table's.
+- Scaffold the skeleton only: build files, layout, configuration, a health check, and one smoke test. Add no example domain code, sample entities or database migrations unless asked.
+- If a required tool is missing (JDK, Maven, Gradle, .NET SDK, Node, Android SDK), say so. Generate the files anyway, and report the verification steps you couldn't run as **not verified**. Never claim a build passed without running it.
+
+**Inputs:** app name (e.g. `backoffice-ui`) · UI component library (the table leaves it TBD; ask, or default to none) · styling: **Tailwind v4** (default) or CSS Modules.
+
+1. **Scaffold.** Run `npm create vite@latest <name> -- --template react-ts`, then remove the demo assets and `App` content.
+2. **Dependencies.** Install the libraries from the Technology Stack table, pinned to the listed major and minor lines (React Router, Zustand, TanStack Query, React Hook Form, Zod, Axios, the chart library only if needed, Tailwind). Dev tooling: Vitest, React Testing Library, Playwright, ESLint 9 flat config, Prettier.
+3. **Configuration.** Write the files exactly as in the Configuration Files section: `.env` files, `vite.config.ts`, `tsconfig.json` (strict), `eslint.config.js`, `prettier.config.js`, `vitest.config.ts`, `playwright.config.ts` and `src/index.css`.
+4. **Layout.** Create the Project Structure folders, the API client (`src/api/client.ts` with the base URL from `VITE_API_BASE_URL`), the TanStack Query provider, the router with a placeholder home route, and an error boundary.
+5. **Scripts.** `package.json` needs at least `dev`, `build`, `preview`, `lint`, `typecheck` (`tsc --noEmit`), `test` and `test:e2e`.
+6. **Tests.** One Vitest + React Testing Library test rendering the home route, and one Playwright test that the app loads.
+7. **Repo files.** `.gitignore` (node_modules, dist, `.env.local`), `.env.example`, and a `README.md`.
+8. **Verify.** Run `npm run lint`, `npm run typecheck`, `npm test` and `npm run build`. Run `npx playwright install` + `npm run test:e2e` only if the browsers can be installed; otherwise report that step as not verified.
+
+## Done criteria (new project)
+
+- [ ] Lint, type-check, unit tests and build are all green. E2E is green or explicitly reported as not verified.
+- [ ] The installed versions (`npm ls --depth=0`) match this skill's table.
+- [ ] Strict TypeScript with no `any`, and ESLint and Prettier are configured.
+- [ ] No demo code is left. The API base URL comes from env, and `.env.example` documents it.

@@ -1,6 +1,6 @@
 ---
 name: tech-stack-android
-description: Native Android stack: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines/Flow and WorkManager, with Gradle version catalog and SDK targets. Use when building or structuring an Android app.
+description: Native Android stack: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines/Flow and WorkManager, with Gradle version catalog and SDK targets, plus a step-by-step new-project scaffolding workflow with done criteria. Use when scaffolding a new project on this stack or building or structuring an Android app.
 ---
 
 # Android Stack — Kotlin + Compose + Clean Architecture + MVVM
@@ -163,3 +163,30 @@ app/
 | Compose UI | Compose UI Test (`createComposeRule`) | Screen rendering and interactions |
 | Remote / Sync | MockWebServer (OkHttp) | Retrofit + Kotlin Serialization integration tests |
 
+---
+
+## New project workflow
+
+**Ground rules**
+- Ask for the inputs below that the user hasn't given, and show the defaults you'll use. Then proceed without further questions.
+- Create the project in a **new or empty** folder, and never overwrite existing files. If the folder isn't empty, stop and ask.
+- Take every version from this skill's Technology Stack table (and its reference files). Don't pull "latest" from memory or from a generator, and if a generator writes different versions, change them to the table's.
+- Scaffold the skeleton only: build files, layout, configuration, a health check, and one smoke test. Add no example domain code, sample entities or database migrations unless asked.
+- If a required tool is missing (JDK, Maven, Gradle, .NET SDK, Node, Android SDK), say so. Generate the files anyway, and report the verification steps you couldn't run as **not verified**. Never claim a build passed without running it.
+
+**Inputs:** app name (e.g. `Shop`) · application id / package (e.g. `com.mycompany.shop`).
+
+1. **Gradle.** Write `settings.gradle.kts`, the root and `app/` `build.gradle.kts`, and `gradle/libs.versions.toml` with every library from the Technology Stack table in the version catalog. Set `compileSdk 36` and `minSdk 26`, and add the Compose, Hilt (KSP) and Kotlin serialization plugins. Generate the Gradle wrapper.
+2. **App shell.** An `@HiltAndroidApp` `Application` class, a `MainActivity` with `setContent` and the Material3 theme, and a `NavHost` with a single placeholder route (type-safe `@Serializable` route).
+3. **Layout.** Create the Project Structure folders (`domain/`, `data/local|remote|repository|mapper|worker/`, `di/`, `presentation/`, `util/`), with empty Hilt modules in `di/` and `.gitkeep` where needed.
+4. **Manifest.** Declare the application class, `INTERNET` permission, and no cleartext traffic.
+5. **Tests.** One JUnit 5 unit test, and one Compose UI test that the placeholder screen renders.
+6. **Repo files.** `.gitignore` (build/, .gradle/, `local.properties`, keystores), and a `README.md`.
+7. **Verify.** Run `./gradlew assembleDebug testDebugUnitTest`. The instrumented Compose UI test needs a device or emulator; if none is available, report it as not verified.
+
+## Done criteria (new project)
+
+- [ ] `assembleDebug` and the unit tests are green. UI tests are green or reported as not verified.
+- [ ] Every dependency version lives only in `libs.versions.toml` and matches this skill's table.
+- [ ] Hilt is wired: the app launches to the placeholder screen without crashing (checked on an emulator if one is available).
+- [ ] No keystores, API keys or `local.properties` are committed.

@@ -174,7 +174,7 @@ These skills describe **what** the business does, with no technology choices. Ea
 
 ### Tech: stacks
 
-Each stack skill has the **only** version table for its stack, with a "last verified" line to fill in when you check the versions.
+Each stack skill has the **only** version table for its stack, with a "last verified" line to fill in when you check the versions. Each also ends with a **New project workflow** and **Done criteria** for scaffolding a new project on that stack.
 
 - **`tech-stack-java-spring-rest`**: Java 25 + Spring Boot 4.1: coding conventions, OpenAPI, an H2 console for development, MapStruct and JPA patterns, and a security baseline. Maven dependencies and configuration are in reference files.
 - **`tech-stack-kotlin-quarkus-rest`**: Kotlin 2.4 + Quarkus 3.38: Gradle Kotlin DSL, Panache, MapStruct, OpenAPI, SmallRye JWT, and `%dev`/`%test`/`%prod` profiles.
@@ -210,7 +210,8 @@ skills/
 ├── composite/webstore/<skill>/SKILL.md [+ references/*.md]
 ├── evals/webstore-evals.json     behavioural test prompts + expectations
 ├── tools/validate-skills.js      compliance checker
-├── install.sh / install.ps1      flatten + copy into a Claude skills folder
+├── claude-setup/                 CLAUDE.md index + commands (recommended setup)
+├── install.sh / install.ps1      alternative setup: copy skills into a Claude skills folder
 └── README.md
 ```
 
@@ -218,9 +219,49 @@ skills/
 
 ---
 
-## Install
+## Setup (recommended): CLAUDE.md index + commands
 
-Claude only discovers skills one folder deep (`<skills-dir>/<skill-name>/SKILL.md`). The install scripts run the validator, then copy every skill flat into a skills folder.
+With this setup, files can have any name and live in any folder. Nothing gets copied into skill folders: Claude reads the library files straight from this repository.
+
+- `claude-setup/CLAUDE.md` goes to `~/.claude/CLAUDE.md`. It is an index that tells Claude which library file to read for which task, and it maps skill names (as the files refer to each other) to paths. It is loaded in every session and is short: only the matching files are read.
+- `claude-setup/commands/*.md` go to `~/.claude/commands/`. They define:
+  - **procedures:** `/pr-review`, `/webstore-java`, `/webstore-kotlin`, `/webstore-react`, `/aws-deploy`
+  - **scaffolding:** `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-api`, `/new-react-app`, `/new-vaadin-app`, `/new-android-app`
+
+  A command always loads its file and runs that file's procedure. The scaffolding commands run the **New project workflow** at the end of each `tech-stack-*` file. It covers pinned versions, layout, configuration, a health check and a smoke test, then build-and-run verification against done criteria.
+
+**Install or update** (run again after editing anything in `claude-setup/`):
+
+```powershell
+Copy-Item C:\dev\source\skills\claude-setup\CLAUDE.md $HOME\.claude\CLAUDE.md
+```
+
+```powershell
+Copy-Item -Recurse -Force C:\dev\source\skills\claude-setup\commands\* $HOME\.claude\commands\
+```
+
+The library path `C:/dev/source/skills/` is written into both files. If you move the repository, update that path.
+
+**Keep it consistent:** when you rename or move a library file, update its index row and any command that loads it with `@`. `node tools/validate-skills.js` fails when a skill is missing from the index or a path is broken. It also warns when the copies in `~/.claude` are out of date.
+
+**Use it:**
+
+```
+/new-quarkus-service billing com.acme.billing
+/webstore-java implement the cart module
+/pr-review 123
+/aws-deploy catalog service on Fargate, dev
+```
+
+Plain requests work too ("review PR 123", "add coupons to the React cart"). Claude finds the matching rows in the index and reads only those files. A composite then loads only the other files the task needs, and follows its workflow until every done criterion holds.
+
+## Alternative setup: install as Claude Code skills
+
+Use this if you prefer Claude Code's built-in skill discovery. Claude then decides from each skill's description when to load it, and each skill becomes a `/skill-name` command.
+
+Use it **instead of** the recommended setup, not together with it. Otherwise every file is available twice. If you switch, remove the index and commands from `~/.claude`.
+
+Claude only discovers skills one folder deep (`<skills-dir>/<skill-name>/SKILL.md`). The install scripts run the validator, then copy every skill flat into a skills folder:
 
 ```bash
 ./install.sh                    # ~/.claude/skills (every project)
@@ -234,26 +275,15 @@ Claude only discovers skills one folder deep (`<skills-dir>/<skill-name>/SKILL.m
 
 If PowerShell says running scripts is disabled, run the script once with `powershell -ExecutionPolicy Bypass -File .\install.ps1`. To allow local scripts permanently for your user, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
-Run the install again after editing a skill. If you already installed the older skills, delete `infra-aws-ec2`, `infra-aws-fargate` and `webstore-database-postgres` from the target folder. The first two were merged into `infra-aws-ecs`, and the third was removed.
+Run the install again after editing a skill. If you installed an older version, delete `infra-aws-ec2`, `infra-aws-fargate` and `webstore-database-postgres` from the target folder. The first two were merged into `infra-aws-ecs`, and the third was removed.
 
-## Use
-
-Claude picks a skill automatically when your request matches its description. You can also call one directly:
-
-```
-/webstore-arch-java-api implement the cart module
-/infra-aws-ecs create the stacks for a new catalog service on Fargate
-/tech-pr-review 123
-/tech-pr-review feature/checkout develop
-```
-
-A composite loads only the atomic skills the task needs, then follows its workflow until every done criterion holds.
+Usage with this setup: `/webstore-arch-java-api implement the cart module`, `/infra-aws-ecs create the stacks for a new catalog service on Fargate`, `/tech-pr-review 123`, or a plain request that matches a skill's description.
 
 ## Test the skills
 
 `evals/webstore-evals.json` holds realistic prompts, each with a list of expectations. For example: "cart endpoints work without a JWT", "the Stripe webhook verifies the signature before parsing", "admin writes live under /api/admin".
 
-1. Run a prompt in a scratch project **with** the skills installed, and once **without** them as a baseline.
+1. Run a prompt in a scratch project **with** the library set up (either setup), and once **without** them as a baseline.
 2. Check each expectation against what Claude produced.
 3. When a case fails, fix the skill that owns that fact and run the case again.
 

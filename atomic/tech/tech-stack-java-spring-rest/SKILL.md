@@ -1,6 +1,6 @@
 ---
 name: tech-stack-java-spring-rest
-description: Java 25 + Spring Boot 4.1 REST API stack: pinned versions, Maven dependencies, JPA and MapStruct conventions, OpenAPI/Swagger, H2 console for dev, profile-based configuration, and security baseline. Use when creating or configuring a Spring Boot REST service.
+description: Java 25 + Spring Boot 4.1 REST API stack: pinned versions, Maven dependencies, JPA and MapStruct conventions, OpenAPI/Swagger, H2 console for dev, profile-based configuration, and security baseline, plus a step-by-step new-project scaffolding workflow with done criteria. Use when scaffolding a new project on this stack or creating or configuring a Spring Boot REST service.
 ---
 
 # Java 25 + Spring Boot REST API
@@ -179,3 +179,34 @@ H2 must **not** use `<scope>runtime</scope>` — it needs to be available at com
 ## Configuration File Format
 
 Details: [references/configuration.md](references/configuration.md). Read it when writing application.yml / profile configuration.
+
+---
+
+## New project workflow
+
+**Ground rules**
+- Ask for the inputs below that the user hasn't given, and show the defaults you'll use. Then proceed without further questions.
+- Create the project in a **new or empty** folder, and never overwrite existing files. If the folder isn't empty, stop and ask.
+- Take every version from this skill's Technology Stack table (and its reference files). Don't pull "latest" from memory or from a generator, and if a generator writes different versions, change them to the table's.
+- Scaffold the skeleton only: build files, layout, configuration, a health check, and one smoke test. Add no example domain code, sample entities or database migrations unless asked.
+- If a required tool is missing (JDK, Maven, Gradle, .NET SDK, Node, Android SDK), say so. Generate the files anyway, and report the verification steps you couldn't run as **not verified**. Never claim a build passed without running it.
+
+**Inputs:** service name (e.g. `billing`) · group/package (default `com.mycompany.<name>`) · build tool (default **Maven**).
+
+1. **Build.** Write `pom.xml` with the Spring Boot parent and the dependencies in [references/maven-dependencies.md](references/maven-dependencies.md), and add `spring-boot-starter-actuator` for health. Generate the Maven wrapper (`mvn -N wrapper:wrapper`) so `./mvnw` works without a global Maven.
+2. **Layout.** Create `src/main/java/<package>/` with the hexagonal folders from `tech-arch-hexagonal` (`domain/`, `application/port/in|out/`, `application/service/`, `infrastructure/rest|persistence|config/`). Add a `package-info.java` or `.gitkeep` so empty folders survive git.
+3. **Entry point.** `<Name>Application.java` with `@SpringBootApplication`.
+4. **Configuration.** Add `application.yml` + `application-dev.yml` (H2) + `application-prod.yml` (PostgreSQL via env vars) as in [references/configuration.md](references/configuration.md). Expose only `health` and `info` actuator endpoints.
+5. **Cross-cutting.** Add `OpenApiConfig`, and a `SecurityConfig` that permits `/actuator/health`, Swagger UI and `/v3/api-docs`. Add a global exception handler returning RFC 9457 `ProblemDetail`.
+6. **Smoke test.** A `@SpringBootTest` that starts the context and asserts `GET /actuator/health` returns `UP`.
+7. **Repo files.** `.gitignore` (target/, IDE files, `.env`), and a `README.md` with how to build, run with the dev profile, and open Swagger UI.
+8. **Verify.** Run `./mvnw verify`. Then start the app with `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`, check the health endpoint and Swagger UI with `curl -s localhost:8080/actuator/health` and `curl -s -o /dev/null -w "%{http_code}" localhost:8080/swagger-ui/index.html`, then stop the app.
+
+## Done criteria (new project)
+
+- [ ] `./mvnw verify` is green, and the smoke test ran.
+- [ ] The app starts on the dev profile, `/actuator/health` returns `{"status":"UP"}`, and Swagger UI returns `200`.
+- [ ] Java, Spring Boot and library versions match this skill's table.
+- [ ] The hexagonal folders exist, with no example domain code.
+- [ ] No secrets in the repo: prod credentials come from environment variables.
+- [ ] `README.md` explains build and run. Anything not verified is listed explicitly in your reply.
