@@ -2,8 +2,8 @@
 # Claude only discovers skills one level deep (<skills-dir>\<skill-name>\SKILL.md),
 # so the atomic\ and composite\ tree is flattened on install.
 #
-#   .\install.ps1                        -> ~\.claude\skills            (all your projects)
-#   .\install.ps1 -Project C:\my\project -> C:\my\project\.claude\skills
+#   .\install-as-claude-skills.ps1                        -> ~\.claude\skills            (all your projects)
+#   .\install-as-claude-skills.ps1 -Project C:\my\project -> C:\my\project\.claude\skills
 param([string]$Project)
 
 $ErrorActionPreference = 'Stop'

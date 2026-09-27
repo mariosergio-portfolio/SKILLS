@@ -1,6 +1,6 @@
 # Knowledge library
 
-My engineering knowledge lives in plain Markdown files under **`C:/dev/source/skills/`** (the "library"). They are not auto-loaded. **Before starting a task, find its rows in the index below and read those files with the Read tool.**
+My engineering knowledge lives in plain Markdown files under **`{{SKILLS_HOME}}/`** (the "library"). They are not auto-loaded. **Before starting a task, find its rows in the index below and read those files with the Read tool.**
 
 Rules:
 - Read **only** the files the current task needs. Never read the whole library "just in case".
@@ -13,7 +13,7 @@ Rules:
 
 ## Index
 
-Paths are relative to `C:/dev/source/skills/`.
+Paths are relative to `{{SKILLS_HOME}}/`.
 
 ### Building the web store
 
@@ -75,5 +75,5 @@ These are defined in `~/.claude/commands/`. They load the right file and run its
 | `/pr-review` | Review a PR, branch or diff |
 | `/webstore-java`, `/webstore-kotlin`, `/webstore-react` | Build or change a web store feature |
 | `/aws-deploy` | AWS CloudFormation + ECS for a service |
-| `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-service`, `/new-go-service`, `/new-node-service` | Scaffold a new back-end project |
+| `/new-java-spring-service`, `/new-quarkus-service`, `/new-dotnet-service`, `/new-go-service`, `/new-node-service` | Scaffold a new back-end project |
 | `/new-react-app`, `/new-vaadin-app`, `/new-android-app` | Scaffold a new front-end or mobile project |

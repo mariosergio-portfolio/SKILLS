@@ -3,8 +3,8 @@
 # Claude only discovers skills one level deep (<skills-dir>/<skill-name>/SKILL.md),
 # so the atomic/ and composite/ tree is flattened on install.
 #
-#   ./install.sh                     -> ~/.claude/skills            (all your projects)
-#   ./install.sh /path/to/project    -> /path/to/project/.claude/skills
+#   ./install-as-claude-skills.sh                  -> ~/.claude/skills            (all your projects)
+#   ./install-as-claude-skills.sh /path/to/project -> /path/to/project/.claude/skills
 set -euo pipefail
 
 src="$(cd "$(dirname "$0")" && pwd)"

@@ -2,7 +2,7 @@
 description: Scaffold a new Node.js + Express REST service
 argument-hint: <service-name> [port] [postgres]
 ---
-@C:/dev/source/skills/atomic/tech/tech-stack-node-express-rest/SKILL.md
+@{{SKILLS_HOME}}/atomic/tech/tech-stack-node-express-rest/SKILL.md
 
 Create a new project: $ARGUMENTS
 

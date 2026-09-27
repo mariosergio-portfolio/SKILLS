@@ -2,7 +2,7 @@
 description: Implement or change a web store feature in the React front end
 argument-hint: <what to build, e.g. "the checkout flow">
 ---
-@C:/dev/source/skills/composite/webstore/webstore-arch-react/SKILL.md
+@{{SKILLS_HOME}}/composite/webstore/webstore-arch-react/SKILL.md
 
 Task: $ARGUMENTS
 

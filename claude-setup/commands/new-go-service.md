@@ -2,7 +2,7 @@
 description: Scaffold a new Go + Gin REST service
 argument-hint: <service-name> [module-path] [port]
 ---
-@C:/dev/source/skills/atomic/tech/tech-stack-go-gin-rest/SKILL.md
+@{{SKILLS_HOME}}/atomic/tech/tech-stack-go-gin-rest/SKILL.md
 
 Create a new project: $ARGUMENTS
 

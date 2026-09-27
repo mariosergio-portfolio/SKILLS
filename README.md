@@ -212,10 +212,11 @@ skills/
 │   ├── tech/<skill>/SKILL.md [+ references/*.md, scripts/*]
 │   └── infra/<skill>/SKILL.md [+ references/*.md]
 ├── composite/webstore/<skill>/SKILL.md [+ references/*.md]
-├── evals/webstore-evals.json     behavioural test prompts + expectations
-├── tools/validate-skills.js      compliance checker
-├── claude-setup/                 CLAUDE.md index + commands (recommended setup)
-├── install.sh / install.ps1      alternative setup: copy skills into a Claude skills folder
+├── evals/webstore-evals.json            behavioural test prompts + expectations
+├── tools/validate-skills.js             compliance checker
+├── tools/install-claude-setup.js        recommended setup: install claude-setup/ into ~/.claude
+├── claude-setup/                        CLAUDE.md index + commands (recommended setup)
+├── install-as-claude-skills.sh / .ps1   alternative setup: copy skills into a Claude skills folder
 └── README.md
 ```
 
@@ -230,23 +231,29 @@ With this setup, files can have any name and live in any folder. Nothing gets co
 - `claude-setup/CLAUDE.md` goes to `~/.claude/CLAUDE.md`. It is an index that tells Claude which library file to read for which task, and it maps skill names (as the files refer to each other) to paths. It is loaded in every session and is short: only the matching files are read.
 - `claude-setup/commands/*.md` go to `~/.claude/commands/`. They define:
   - **procedures:** `/pr-review`, `/webstore-java`, `/webstore-kotlin`, `/webstore-react`, `/aws-deploy`
-  - **scaffolding:** `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-service`, `/new-go-service`, `/new-node-service`, `/new-react-app`, `/new-vaadin-app`, `/new-android-app`
+  - **scaffolding:** `/new-java-spring-service`, `/new-quarkus-service`, `/new-dotnet-service`, `/new-go-service`, `/new-node-service`, `/new-react-app`, `/new-vaadin-app`, `/new-android-app`
 
   A command always loads its file and runs that file's procedure. The scaffolding commands run the **New project workflow** at the end of each `tech-stack-*` file. It covers pinned versions, layout, configuration, a health check and a smoke test, then build-and-run verification against done criteria.
 
 **Install or update** (run again after editing anything in `claude-setup/`):
 
-```powershell
-Copy-Item C:\dev\source\skills\claude-setup\CLAUDE.md $HOME\.claude\CLAUDE.md
+```bash
+node tools/install-claude-setup.js
 ```
 
-```powershell
-Copy-Item -Recurse -Force C:\dev\source\skills\claude-setup\commands\* $HOME\.claude\commands\
+The files in `claude-setup/` don't contain the library path. They use the placeholder `{{SKILLS_HOME}}`, and the installer replaces it with the real path while it copies `CLAUDE.md` to `~/.claude/CLAUDE.md` and the commands to `~/.claude/commands/`. (Claude Code doesn't expand variables in these files, so the installed copies must contain the real path.)
+
+By default the library path is where this repository is. To use another one, pass it as an argument or set the `SKILLS_HOME` environment variable (the argument wins):
+
+```bash
+node tools/install-claude-setup.js --skills-home D:/work/skills
+SKILLS_HOME=D:/work/skills node tools/install-claude-setup.js
+node tools/install-claude-setup.js --target C:/my/project/.claude   # install for one project only
 ```
 
-The library path `C:/dev/source/skills/` is written into both files. If you move the repository, update that path.
+If you move the repository, run the installer again. The installer overwrites `~/.claude/CLAUDE.md`, so keep personal additions in the repo's `claude-setup/CLAUDE.md`.
 
-**Keep it consistent:** when you rename or move a library file, update its index row and any command that loads it with `@`. `node tools/validate-skills.js` fails when a skill is missing from the index or a path is broken. It also warns when the copies in `~/.claude` are out of date.
+**Keep it consistent:** when you rename or move a library file, update its index row and any command that loads it with `@`. `node tools/validate-skills.js` fails when a skill is missing from the index or a path is broken. It also warns when the copies in `~/.claude` are out of date (it compares them with `claude-setup/` after filling in the placeholder, using the same `SKILLS_HOME` rule as the installer).
 
 **Use it:**
 
@@ -268,16 +275,16 @@ Use it **instead of** the recommended setup, not together with it. Otherwise eve
 Claude only discovers skills one folder deep (`<skills-dir>/<skill-name>/SKILL.md`). The install scripts run the validator, then copy every skill flat into a skills folder:
 
 ```bash
-./install.sh                    # ~/.claude/skills (every project)
-./install.sh /path/to/project   # <project>/.claude/skills (one project, commit it to share)
+./install-as-claude-skills.sh                   # ~/.claude/skills (every project)
+./install-as-claude-skills.sh /path/to/project  # <project>/.claude/skills (one project, commit it to share)
 ```
 
 ```powershell
-.\install.ps1
-.\install.ps1 -Project C:\path\to\project
+.\install-as-claude-skills.ps1
+.\install-as-claude-skills.ps1 -Project C:\path\to\project
 ```
 
-If PowerShell says running scripts is disabled, run the script once with `powershell -ExecutionPolicy Bypass -File .\install.ps1`. To allow local scripts permanently for your user, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+If PowerShell says running scripts is disabled, run the script once with `powershell -ExecutionPolicy Bypass -File .\install-as-claude-skills.ps1`. To allow local scripts permanently for your user, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 Run the install again after editing a skill. If you installed an older version, delete `infra-aws-ec2`, `infra-aws-fargate` and `webstore-database-postgres` from the target folder. The first two were merged into `infra-aws-ecs`, and the third was removed.
 

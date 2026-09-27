@@ -2,7 +2,7 @@
 description: Implement or change a web store feature in the Java / Spring back end
 argument-hint: <what to build, e.g. "the cart module">
 ---
-@C:/dev/source/skills/composite/webstore/webstore-arch-java-api/SKILL.md
+@{{SKILLS_HOME}}/composite/webstore/webstore-arch-java-api/SKILL.md
 
 Task: $ARGUMENTS
 

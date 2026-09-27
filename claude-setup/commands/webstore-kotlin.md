@@ -2,7 +2,7 @@
 description: Implement or change a web store feature in the Kotlin / Quarkus back end
 argument-hint: <what to build, e.g. "admin product management">
 ---
-@C:/dev/source/skills/composite/webstore/webstore-arch-kotlin-quarkus-api/SKILL.md
+@{{SKILLS_HOME}}/composite/webstore/webstore-arch-kotlin-quarkus-api/SKILL.md
 
 Task: $ARGUMENTS
 
