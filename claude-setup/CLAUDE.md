@@ -52,6 +52,8 @@ Each file ends with a **New project workflow** and **Done criteria**. Use them w
 | Java 25 + Spring Boot REST API | `tech-stack-java-spring-rest` | `atomic/tech/tech-stack-java-spring-rest/SKILL.md` |
 | Kotlin + Quarkus REST API | `tech-stack-kotlin-quarkus-rest` | `atomic/tech/tech-stack-kotlin-quarkus-rest/SKILL.md` |
 | .NET / ASP.NET Core API | `tech-stack-dotnet` | `atomic/tech/tech-stack-dotnet/SKILL.md` |
+| Go + Gin REST API | `tech-stack-go-gin-rest` | `atomic/tech/tech-stack-go-gin-rest/SKILL.md` |
+| Node.js + Express REST API | `tech-stack-node-express-rest` | `atomic/tech/tech-stack-node-express-rest/SKILL.md` |
 | Vaadin (server-side Java UI) | `tech-stack-java-spa` | `atomic/tech/tech-stack-java-spa/SKILL.md` |
 | React + TypeScript front end | `tech-stack-react` | `atomic/tech/tech-stack-react/SKILL.md` |
 | Android (Kotlin, Compose) | `tech-stack-android` | `atomic/tech/tech-stack-android/SKILL.md` |
@@ -73,5 +75,5 @@ These are defined in `~/.claude/commands/`. They load the right file and run its
 | `/pr-review` | Review a PR, branch or diff |
 | `/webstore-java`, `/webstore-kotlin`, `/webstore-react` | Build or change a web store feature |
 | `/aws-deploy` | AWS CloudFormation + ECS for a service |
-| `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-api` | Scaffold a new back-end project |
+| `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-service`, `/new-go-service`, `/new-node-service` | Scaffold a new back-end project |
 | `/new-react-app`, `/new-vaadin-app`, `/new-android-app` | Scaffold a new front-end or mobile project |

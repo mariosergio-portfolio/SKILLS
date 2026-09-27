@@ -98,7 +98,7 @@ INFRA
             provider)                  launch-type-ec2.md / launch-type-fargate.md)
 ```
 
-Some atomic skills have no web store composite yet: `tech-stack-dotnet`, `tech-stack-java-spa`, `tech-stack-android`, `tech-database-postgres` and `tech-database-oracle`. The back-end composites use the database skills when they need them. You can use these skills on their own, or build new composites on top of them.
+Some atomic skills have no web store composite yet: `tech-stack-dotnet`, `tech-stack-go-gin-rest`, `tech-stack-node-express-rest`, `tech-stack-java-spa`, `tech-stack-android`, `tech-database-postgres` and `tech-database-oracle`. The back-end composites use the database skills when they need them. You can use these skills on their own, or build new composites on top of them.
 
 ---
 
@@ -124,6 +124,8 @@ Some atomic skills have no web store composite yet: `tech-stack-dotnet`, `tech-s
 | `tech-stack-java-spring-rest` | Atomic | Tech · Stack | Java 25 + Spring Boot 4.1 REST API | — | `references/`: Maven, configuration |
 | `tech-stack-kotlin-quarkus-rest` | Atomic | Tech · Stack | Kotlin 2.4 + Quarkus 3.38 REST API | — | — |
 | `tech-stack-dotnet` | Atomic | Tech · Stack | C# 14 + ASP.NET Core 10 + EF Core 10 REST API | — | — |
+| `tech-stack-go-gin-rest` | Atomic | Tech · Stack | Go 1.26 + Gin 1.12 REST API, goroutine concurrency patterns | — | — |
+| `tech-stack-node-express-rest` | Atomic | Tech · Stack | Node.js 24 + Express 5 REST API (JavaScript, ES modules) | — | — |
 | `tech-stack-java-spa` | Atomic | Tech · Stack | Java 25 + Spring Boot + Vaadin 25 server-side SPA | — | — |
 | `tech-stack-react` | Atomic | Tech · Stack | React 19 + TypeScript + Vite front end | — | — |
 | `tech-stack-android` | Atomic | Tech · Stack | Kotlin + Jetpack Compose, Clean Architecture + MVVM | — | — |
@@ -179,6 +181,8 @@ Each stack skill has the **only** version table for its stack, with a "last veri
 - **`tech-stack-java-spring-rest`**: Java 25 + Spring Boot 4.1: coding conventions, OpenAPI, an H2 console for development, MapStruct and JPA patterns, and a security baseline. Maven dependencies and configuration are in reference files.
 - **`tech-stack-kotlin-quarkus-rest`**: Kotlin 2.4 + Quarkus 3.38: Gradle Kotlin DSL, Panache, MapStruct, OpenAPI, SmallRye JWT, and `%dev`/`%test`/`%prod` profiles.
 - **`tech-stack-dotnet`**: .NET 10 (LTS), C# 14, ASP.NET Core 10, EF Core 10, FluentValidation, xUnit v3 and Testcontainers.
+- **`tech-stack-go-gin-rest`**: Go 1.26 + Gin 1.12: `cmd/` + `internal/` layout, godotenv configuration, CORS, binding validation, an embedded OpenAPI spec with Swagger UI, goroutine concurrency patterns, and `testing` + `httptest` with `-race`.
+- **`tech-stack-node-express-rest`**: Node.js 24 + Express 5 in plain JavaScript (ES modules): factory functions with a composition root, zod-validated config and requests, pino, helmet, CORS, rate limiting, node-postgres, Swagger UI, graceful shutdown, Docker, and `node:test` + supertest.
 - **`tech-stack-java-spa`**: Java 25, Spring Boot and Vaadin 25 (Flow), with Spring Security for views and Karibu-Testing.
 - **`tech-stack-react`**: React 19, TypeScript, Vite, React Router, Zustand, TanStack Query, React Hook Form + Zod, Axios, Tailwind, Vitest, React Testing Library and Playwright.
 - **`tech-stack-android`**: Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Retrofit, Coroutines/Flow and WorkManager.
@@ -226,7 +230,7 @@ With this setup, files can have any name and live in any folder. Nothing gets co
 - `claude-setup/CLAUDE.md` goes to `~/.claude/CLAUDE.md`. It is an index that tells Claude which library file to read for which task, and it maps skill names (as the files refer to each other) to paths. It is loaded in every session and is short: only the matching files are read.
 - `claude-setup/commands/*.md` go to `~/.claude/commands/`. They define:
   - **procedures:** `/pr-review`, `/webstore-java`, `/webstore-kotlin`, `/webstore-react`, `/aws-deploy`
-  - **scaffolding:** `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-api`, `/new-react-app`, `/new-vaadin-app`, `/new-android-app`
+  - **scaffolding:** `/new-spring-service`, `/new-quarkus-service`, `/new-dotnet-service`, `/new-go-service`, `/new-node-service`, `/new-react-app`, `/new-vaadin-app`, `/new-android-app`
 
   A command always loads its file and runs that file's procedure. The scaffolding commands run the **New project workflow** at the end of each `tech-stack-*` file. It covers pinned versions, layout, configuration, a health check and a smoke test, then build-and-run verification against done criteria.
 
